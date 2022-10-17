@@ -1,3 +1,5 @@
+## Parameters
+
 | Chain parameter & use | Game attribute & use |    
 |-----------------------|----------------------|
 | Kw: battery to determine how many actions you can do | HP: determines default health of an account (and each card) |  
@@ -6,8 +8,7 @@
 | Amperes: helps to determine rank of cyberlink | Accuracy: an attribute for calculating defense points |
 | Citizen Cosmos delegations | Delegations to Citizen Cosmos can add moves and provide bonuses to palyers |
 
-Other chain parameters:
-
+### Other chain parameters:
 - Karma:  
 - Average rank weight: self-explanatory
 - Particle: A hash of a file in IPFS. A CID
@@ -15,8 +16,7 @@ Other chain parameters:
 - TOCYB: Future tokens of the Cyber blockchain (already liquid)
 - Energy: A*V=W ; W + income - outcome = Free W
 
-Other game attributes:
-
+### Other game attributes:
 - Mana: points for magic
 - Rank: Players internal ranks
 - Guilds: Players guilds
