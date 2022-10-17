@@ -8,15 +8,16 @@ The Bostrom universe is built around robots. One of the uses of the chain itself
 
 Our idea is to create a collectable-battle card-game, in which, users will be motivated to use the blockchain itself, to acquire attributes for their cards and to earn further in-game rewards. 
 
-The main goals of the game are:
+### The main goals of the game are:
 
 - Get Cyber users to investment and cyberlink 
 - Gamify the complexity of Bostrom
 - Drop to users of the Cosmos ecosystem
 - Arouse interest from various Cosmos ecosystems by integrating them into the gameplay
 
-### [Gameplay]()
-### [Action list](https://github.com/citizen-cosmos/game-of-life/blob/main/actions.md)
-### [Parameter list](https://github.com/citizen-cosmos/game-of-life/blob/main/parameters.md)
-### [Plasma](https://github.com/citizen-cosmos/game-of-life/blob/main/plasma.md)
-### [Races](https://github.com/citizen-cosmos/game-of-life/blob/main/races.md)
+### Initial Docs:
+- [Gameplay](https://github.com/citizen-cosmos/game-of-life/blob/main/gameplay.md)
+- [Action list](https://github.com/citizen-cosmos/game-of-life/blob/main/actions.md)
+- [Parameter list](https://github.com/citizen-cosmos/game-of-life/blob/main/parameters.md)
+- [Plasma](https://github.com/citizen-cosmos/game-of-life/blob/main/plasma.md)
+- [Races](https://github.com/citizen-cosmos/game-of-life/blob/main/races.md)
