@@ -10,5 +10,7 @@ Plasma is the in-game resource. It has an infinite supply and is pre-minted at l
 - Purchasing additional in game merch
 - Purchasing Citizen Cosmos merch
 - Swapped for other tokens 
+- In breed cards?
+- Buy spells?
 
 
