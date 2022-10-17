@@ -1,3 +1,5 @@
+## Action List
+
 ### Main actions:
 - Minting: A player must sign a tx and pay gas on the Bostrom blockchain to mint playing cards
 - Attack: A player can attack another account
