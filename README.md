@@ -17,4 +17,6 @@ The main goals of the game are:
 
 ### [Gameplay]()
 ### [Action list]()
-### [Parameter list]()
+### [Parameter list](https://github.com/citizen-cosmos/game-of-life/blob/main/parameters.md)
+### [Plasma]()
+### [Races]()
