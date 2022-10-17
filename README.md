@@ -16,7 +16,7 @@ The main goals of the game are:
 - Arouse interest from various Cosmos ecosystems by integrating them into the gameplay
 
 ### [Gameplay]()
-### [Action list]()
+### [Action list](https://github.com/citizen-cosmos/game-of-life/blob/main/actions.md)
 ### [Parameter list](https://github.com/citizen-cosmos/game-of-life/blob/main/parameters.md)
 ### [Plasma]()
 ### [Races]()
