@@ -4,6 +4,7 @@
 | Cyberlinks: determines brain size                    | Card level: the bigger the brain > chances of getting a cooler card  |
 | Volts: determines the amount of cyberlnks an account can submit | Strength: an attribute for attack points of a card |
 | Amperes: helps to determine rank of cyberlink | Accuracy: an attribute for calculating defense points |
+| Citizen Cosmos delegations | Delegations to Citizen Cosmos can add moves and provide bonuses to palyers |
 
 Other chain parameters:
 
