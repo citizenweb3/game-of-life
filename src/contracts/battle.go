@@ -1,15 +1,17 @@
 package contracts
 
 import (
+	"fmt"
 	"gameoflife/system"
 	"gameoflife/utils"
+	"math/rand"
 )
 
 type BattleI interface {
 	ReadyToBattle(executor utils.UserID)
 	NotReadyToBattel(executor utils.UserID)
 	IsOpenToBattel(user utils.UserID) bool
-	Battle(executor, rival utils.UserID) (bool, error)
+	Battle(executor, rival utils.UserID) (int, error)
 	ModifyCards(owner utils.UserID, cards []CardWithUserInfluence) ([]CardParams, error)
 }
 
@@ -97,13 +99,13 @@ func (b *Battle) ModifyCards(owner utils.UserID, cards []CardWithUserInfluence) 
 	return res, nil
 }
 
-func (b *Battle) Battle(executor, rival utils.UserID) (bool, error) {
+func (b *Battle) Battle(executor, rival utils.UserID) (int, error) {
 	// if !b.IsOpenToBattel(executor) {
 	// 	return utils.ErrBattleUserIsNotReady
 	// }
 
 	if !b.IsOpenToBattel(rival) {
-		return false, utils.ErrBattleUserIsNotReady
+		return 0, utils.ErrBattleUserIsNotReady
 	}
 
 	cardSetExecutor := b.cardSetContract.GetActualSetWithAttribute(executor)
@@ -111,14 +113,68 @@ func (b *Battle) Battle(executor, rival utils.UserID) (bool, error) {
 
 	cardParamExecutor, err := b.ModifyCards(executor, cardSetExecutor)
 	if err != nil {
-		return false, err
+		return 0, err
 	}
 	cardParamRival, err := b.ModifyCards(rival, cardSetRival)
 	if err != nil {
-		return false, err
+		return 0, err
 	}
+	// return b.battle(cardParamExecutor, cardParamRival), nil
 
-	return b.battle(cardParamExecutor, cardParamRival), nil
+	return b.battleStepByStep(cardParamExecutor, cardParamRival, 20), nil
+
+}
+
+func randDammage(strength, accuracy uint64) uint64 {
+	dammage := rand.Uint64() % accuracy
+	if strength > dammage {
+		return 0
+	}
+	return dammage
+}
+
+func (b *Battle) battleStep(cardSet1, cardSet2 []CardParams) bool {
+	listCardAttack := make([]int, 0)
+	allYourCardsDie := true
+	for numInSet := 0; numInSet < len(cardSet1); numInSet++ {
+		if cardSet1[numInSet].Hp != 0 {
+			listCardAttack = append(listCardAttack, numInSet)
+			allYourCardsDie = false
+		}
+		if len(listCardAttack) == 0 {
+			continue
+		}
+		if cardSet2[numInSet].Hp == 0 {
+			continue
+		}
+
+		sumAttack := uint64(0)
+		for _, numCardSet1 := range listCardAttack {
+			sumAttack += randDammage(cardSet2[numInSet].Strength, cardSet1[numCardSet1].Accuracy)
+		}
+		if cardSet2[numInSet].Hp < sumAttack {
+			cardSet2[numInSet].Hp = 0
+		} else {
+			cardSet2[numInSet].Hp -= sumAttack
+		}
+	}
+	return allYourCardsDie
+}
+
+func (b *Battle) battleStepByStep(cardSet1, cardSet2 []CardParams, maxStep int) int {
+	fmt.Println("Start battle modified cardSet1=", cardSet1, " modified cardSet2=", cardSet2)
+	for i := 0; i < maxStep; i++ {
+		if b.battleStep(cardSet1, cardSet2) {
+			return -1
+		}
+		fmt.Println("Step ", i, " after executor hit rival cardSet1=", cardSet1, " cardSet2=", cardSet2)
+		if b.battleStep(cardSet2, cardSet1) {
+			return 1
+		}
+		fmt.Println("Step ", i, " after rival hit executor cardSet1=", cardSet1, " cardSet2=", cardSet2)
+
+	}
+	return 0
 }
 
 func (b *Battle) battle(cardSet1, cardSet2 []CardParams) bool {

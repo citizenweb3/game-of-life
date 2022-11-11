@@ -98,12 +98,14 @@ func (bc *BattleController) Battle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var outStr string
-	if res {
-		bc.battleContract.ReadyToBattle(utils.UserID(p.Executor))
-		outStr = "Now are win!!! And now that's all."
-	} else {
-		bc.battleContract.NotReadyToBattel(utils.UserID(p.Executor))
+	switch res {
+	case -1:
 		outStr = "Now are loose!!! But relax, I fogot add monitisation"
+	case 1:
+		outStr = "Now are win!!! And now that's all."
+	case 0:
+		outStr = "Nobody won. Fighting for too long."
+
 	}
 
 	w.WriteHeader(http.StatusOK)
