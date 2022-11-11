@@ -11,7 +11,7 @@ import (
 
 type SystemControllerI interface {
 	GetUserList(w http.ResponseWriter, r *http.Request)
-	GenerateUsers(w http.ResponseWriter, r *http.Request)
+	GenerateUser(w http.ResponseWriter, r *http.Request)
 	GetUserInfo(w http.ResponseWriter, r *http.Request)
 	MoveForward(w http.ResponseWriter, r *http.Request)
 }
@@ -52,7 +52,7 @@ func (sc *SystemController) GetUserList(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(resp)
 }
 
-func (sc *SystemController) GenerateUsers(w http.ResponseWriter, r *http.Request) {
+func (sc *SystemController) GenerateUser(w http.ResponseWriter, r *http.Request) {
 	var p UserInfoApi
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
@@ -140,5 +140,5 @@ func (sc *SystemController) GetUserInfo(w http.ResponseWriter, r *http.Request) 
 }
 
 func getRandomUserID() string {
-	return fmt.Sprintf("random %d", rand.Int31n(10000000))
+	return fmt.Sprintf("random_user_%d", rand.Int31n(10000000))
 }

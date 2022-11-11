@@ -36,6 +36,14 @@ curl --location --request GET 'localhost:8000/system/user?user_id=ddd'
 
 ## Handles
 ### System
+POST /generate - generate all objects automatic. card has 50% to add to set, user has 50% to be open to battle. 
+```
+	UserCountFrom int - minimum users
+	UserCountTo   int - maximum users
+
+	CardCountFrom int - minimum cards in user collection
+	CardCountTo   int - maximum cards in user collection
+```
 
 GET /system/user/list- return user list
 

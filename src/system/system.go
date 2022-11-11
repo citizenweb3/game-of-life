@@ -9,6 +9,7 @@ type SystemI interface {
 	GetUserParam(userID utils.UserID) (UsersParam, error)
 	GetCurrentTime() int64
 	MoveCurrentTimeForvard(int64) int64
+	CreateUserWithRamdomParam(user utils.UserID) error
 }
 
 type System struct {

@@ -21,8 +21,10 @@ func main() {
 	battle := contracts.NewBattle(cardSet, card, system)
 	battleController := controllers.NewBattleController(battle)
 
+	au := controllers.NewAutomatisation(system, card, cardSet, battle)
+
 	cfg := config.NewConfigApp()
-	httpServer := api.NewHttpServer(cfg, systemController, cardsController, cardSetController, battleController)
+	httpServer := api.NewHttpServer(cfg, systemController, cardsController, cardSetController, battleController, au)
 
 	defer httpServer.Stop()
 	httpServer.Start()

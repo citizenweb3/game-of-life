@@ -15,14 +15,16 @@ func InitializeRoutes(
 	cardsController controllers.CardsControllerI,
 	cardSetController controllers.CardSetControllerI,
 	battleController controllers.BattleControllerI,
+	automat *controllers.Automatisation,
 ) *mux.Router {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
+	router.HandleFunc("/generate", automat.CreateSystem).Methods("POST")
 
 	// System
 	router.HandleFunc("/system/user/list", systemController.GetUserList).Methods("GET")
-	router.HandleFunc("/system/user/add", systemController.GenerateUsers).Methods("POST")
+	router.HandleFunc("/system/user/add", systemController.GenerateUser).Methods("POST")
 	router.HandleFunc("/system/user", systemController.GetUserInfo).Methods("GET")
 	router.HandleFunc("/system/gotothefuture", systemController.MoveForward).Methods("POST")
 
@@ -65,10 +67,11 @@ func NewHttpServer(
 	cc controllers.CardsControllerI,
 	csc controllers.CardSetControllerI,
 	bc controllers.BattleControllerI,
+	au *controllers.Automatisation,
 ) *HttpServer {
 	return &HttpServer{
 		cfg:    cfg,
-		router: InitializeRoutes(sc, cc, csc, bc),
+		router: InitializeRoutes(sc, cc, csc, bc, au),
 		server: nil,
 	}
 }

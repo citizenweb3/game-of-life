@@ -128,3 +128,13 @@ func (uia *UserInfoApi) GetParams() system.UsersParam {
 }
 
 type GetUserListResponse []UserInfoApi
+
+// automatisation
+
+type CreateSystemRequest struct {
+	UserCountFrom int
+	UserCountTo   int
+
+	CardCountFrom int
+	CardCountTo   int
+}

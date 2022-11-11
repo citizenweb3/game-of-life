@@ -17,6 +17,20 @@ type SystemI struct {
 	mock.Mock
 }
 
+// CreateUserWithRamdomParam provides a mock function with given fields: user
+func (_m *SystemI) CreateUserWithRamdomParam(user utils.UserID) error {
+	ret := _m.Called(user)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(utils.UserID) error); ok {
+		r0 = rf(user)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetCurrentTime provides a mock function with given fields:
 func (_m *SystemI) GetCurrentTime() int64 {
 	ret := _m.Called()
