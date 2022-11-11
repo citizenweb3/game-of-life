@@ -12,7 +12,7 @@ func main() {
 	system := system.NewSystem()
 	systemController := controllers.NewSystemController(system)
 
-	card := contracts.NewCards(1000)
+	card := contracts.NewCards(system, 1000)
 	cardsController := controllers.NewCardsController(card)
 
 	cardSet := contracts.NewCardSet(card, uint8(100))

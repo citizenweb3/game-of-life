@@ -185,7 +185,7 @@ func (cc *CardsController) Burn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cc *CardsController) Freeze(w http.ResponseWriter, r *http.Request) {
-	var p BurnRequest
+	var p FreezeRequest
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -193,14 +193,14 @@ func (cc *CardsController) Freeze(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("error in decode:" + err.Error())
 		return
 	}
-	if p.Executor == "" || p.CardID == "" {
+	if p.Executor == "" || p.CardID1 == "" || p.CardID2 == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("content-type", "application/json")
-		json.NewEncoder(w).Encode("executor, cardid are requered")
+		json.NewEncoder(w).Encode("executor, cardids are requered")
 		return
 	}
 
-	err = cc.card.Freeze(utils.CardID(p.CardID), utils.UserID(p.Executor))
+	err = cc.card.Freeze(utils.CardID(p.CardID1), utils.CardID(p.CardID2), utils.UserID(p.Executor))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("content-type", "application/json")

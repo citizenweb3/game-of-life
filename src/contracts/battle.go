@@ -99,11 +99,11 @@ func (b *Battle) ModifyCards(owner utils.UserID, cards []CardWithUserInfluence) 
 
 func (b *Battle) Battle(executor, rival utils.UserID) (bool, error) {
 	// if !b.IsOpenToBattel(executor) {
-	// 	return utils.ErrUserIsNotReady
+	// 	return utils.ErrBattleUserIsNotReady
 	// }
 
 	if !b.IsOpenToBattel(rival) {
-		return false, utils.ErrUserIsNotReady
+		return false, utils.ErrBattleUserIsNotReady
 	}
 
 	cardSetExecutor := b.cardSetContract.GetActualSetWithAttribute(executor)

@@ -31,13 +31,13 @@ func (_m *CardsI) Burn(cardId utils.CardID, executor utils.UserID) error {
 	return r0
 }
 
-// Freeze provides a mock function with given fields: cardId, executor
-func (_m *CardsI) Freeze(cardId utils.CardID, executor utils.UserID) error {
-	ret := _m.Called(cardId, executor)
+// Freeze provides a mock function with given fields: cardId1, cardId2, executor
+func (_m *CardsI) Freeze(cardId1 utils.CardID, cardId2 utils.CardID, executor utils.UserID) error {
+	ret := _m.Called(cardId1, cardId2, executor)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(utils.CardID, utils.UserID) error); ok {
-		r0 = rf(cardId, executor)
+	if rf, ok := ret.Get(0).(func(utils.CardID, utils.CardID, utils.UserID) error); ok {
+		r0 = rf(cardId1, cardId2, executor)
 	} else {
 		r0 = ret.Error(0)
 	}

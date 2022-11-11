@@ -51,15 +51,14 @@ func (cs *CardSet) AddCardToSet(executor utils.UserID, cardId utils.CardID) erro
 	}
 
 	if ok && len(executorSet) == int(cs.countCardInSet) {
-		return utils.ErrTooMuchCards
+		return utils.ErrSetTooMuchCards
 	}
 
 	for _, cardIdInSet := range executorSet {
 		if cardIdInSet == cardId {
-			return utils.ErrAlreadyInSet
+			return utils.ErrSetAlreadyInSet
 		}
 	}
-
 	executorSet = append(executorSet, cardId)
 	cs.cardSet[executor] = executorSet
 
@@ -79,7 +78,7 @@ func (cs *CardSet) RemoveCardFromSet(executor utils.UserID, cardId utils.CardID)
 		}
 	}
 
-	return utils.ErrCardIsNotInSet
+	return utils.ErrSetCardIsNotInSet
 }
 
 func (cs *CardSet) ChangeCardFromSet(executor utils.UserID, cardIdLast, cardIdNew utils.CardID) error {
@@ -93,14 +92,22 @@ func (cs *CardSet) ChangeCardFromSet(executor utils.UserID, cardIdLast, cardIdNe
 		return utils.ErrSetIsEmpty
 	}
 
+	numForChange := -1
 	for num, cardIdInSet := range executorSet {
 		if cardIdInSet == cardIdLast {
-			cs.cardSet[executor][num] = cardIdNew
-			return nil
+			numForChange = num
+		}
+		if cardIdInSet == cardIdNew {
+			return utils.ErrSetAlreadyInSet
 		}
 	}
 
-	return utils.ErrCardIsNotInSet
+	if numForChange != -1 {
+		cs.cardSet[executor][numForChange] = cardIdNew
+		return nil
+	}
+
+	return utils.ErrSetCardIsNotInSet
 }
 
 func (cs *CardSet) GetActualSet(user utils.UserID) []utils.CardID {

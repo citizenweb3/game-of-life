@@ -13,6 +13,7 @@ type SystemControllerI interface {
 	GetUserList(w http.ResponseWriter, r *http.Request)
 	GenerateUsers(w http.ResponseWriter, r *http.Request)
 	GetUserInfo(w http.ResponseWriter, r *http.Request)
+	MoveForward(w http.ResponseWriter, r *http.Request)
 }
 
 type SystemController struct {
@@ -49,7 +50,6 @@ func (sc *SystemController) GetUserList(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	json.NewEncoder(w).Encode(resp)
-
 }
 
 func (sc *SystemController) GenerateUsers(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +90,27 @@ func (sc *SystemController) GenerateUsers(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	json.NewEncoder(w).Encode(resp)
+}
 
+func (sc *SystemController) MoveForward(w http.ResponseWriter, r *http.Request) {
+	var p MoveForwardRequest
+	err := json.NewDecoder(r.Body).Decode(&p)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("content-type", "application/json")
+		json.NewEncoder(w).Encode("error in decode:" + err.Error())
+		return
+	}
+	totalMoved := sc.System.MoveCurrentTimeForvard(p.AddUnixTime)
+
+	resp := MoveForwardResponse{
+		TotalMoved:  totalMoved,
+		CurrentTime: sc.System.GetCurrentTime(),
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("content-type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (sc *SystemController) GetUserInfo(w http.ResponseWriter, r *http.Request) {

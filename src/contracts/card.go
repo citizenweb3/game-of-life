@@ -2,16 +2,19 @@ package contracts
 
 import (
 	"math/rand"
-	"time"
+	"net/url"
 
+	"gameoflife/system"
 	"gameoflife/utils"
 )
+
+var MIXED_ADD = uint64(5)
 
 // AddAvatar(cardId utils.CardID, url string, executor utils.UserID) error
 type CardsI interface {
 	Transfer(cardId utils.CardID, executor, to utils.UserID) error
 	Burn(cardId utils.CardID, executor utils.UserID) error
-	Freeze(cardId utils.CardID, executor utils.UserID) error
+	Freeze(cardId1, cardId2 utils.CardID, executor utils.UserID) error
 	UnFreeze(cardId utils.CardID, executor utils.UserID) error
 	MintNewCard(executor utils.UserID) (utils.CardID, error)
 
@@ -34,23 +37,29 @@ type CardParams struct {
 type Card struct {
 	Id     utils.CardID
 	Params CardParams
+	Avatar url.URL
 }
 
 type Cards struct {
-	ownerCards  map[utils.UserID][]utils.CardID
-	cards       map[utils.CardID]Card
-	cardOwner   map[utils.CardID]utils.UserID
-	freezedCard map[utils.CardID]uint64
-	freezeTime  uint64
+	system system.SystemI
+
+	ownerCards   map[utils.UserID][]utils.CardID
+	cards        map[utils.CardID]Card
+	cardOwner    map[utils.CardID]utils.UserID
+	freezedPair  map[utils.CardID]utils.CardID
+	freezedUntil map[string]int64
+	freezeTime   int64
 }
 
-func NewCards(freezeTime uint64) *Cards {
+func NewCards(system system.SystemI, freezeTime uint32) *Cards {
 	return &Cards{
-		ownerCards:  map[utils.UserID][]utils.CardID{},
-		cards:       map[utils.CardID]Card{},
-		cardOwner:   map[utils.CardID]utils.UserID{},
-		freezedCard: map[utils.CardID]uint64{},
-		freezeTime:  freezeTime,
+		system:       system,
+		ownerCards:   map[utils.UserID][]utils.CardID{},
+		cards:        map[utils.CardID]Card{},
+		cardOwner:    map[utils.CardID]utils.UserID{},
+		freezedPair:  map[utils.CardID]utils.CardID{},
+		freezedUntil: map[string]int64{},
+		freezeTime:   int64(freezeTime),
 	}
 }
 func (c *Cards) GetCardOwner(cardId utils.CardID) (utils.UserID, error) {
@@ -98,19 +107,24 @@ func (c *Cards) MintNewCard(executor utils.UserID) (utils.CardID, error) {
 	if exist {
 		return "", utils.ErrCardNotCreated
 	}
-
-	c.cardOwner[hash] = executor
-	c.cards[hash] = Card{
+	card := Card{
 		Id:     hash,
 		Params: cp,
 	}
-	if executorCards, ok := c.ownerCards[executor]; ok {
-		executorCards = append(executorCards, hash)
-		c.ownerCards[executor] = executorCards
-	} else {
-		c.ownerCards[executor] = []utils.CardID{hash}
-	}
+	c.addCard(card, executor)
+
 	return hash, nil
+}
+
+func (c *Cards) addCard(card Card, owner utils.UserID) {
+	c.cardOwner[card.Id] = owner
+	c.cards[card.Id] = card
+	if executorCards, ok := c.ownerCards[owner]; ok {
+		executorCards = append(executorCards, card.Id)
+		c.ownerCards[owner] = executorCards
+	} else {
+		c.ownerCards[owner] = []utils.CardID{card.Id}
+	}
 }
 
 func generarateRandomCardParams() CardParams {
@@ -161,36 +175,53 @@ func (c *Cards) Burn(cardId utils.CardID, executor utils.UserID) error {
 		return err
 	}
 
-	cards := c.ownerCards[executor]
-	delete(c.cardOwner, cardId)
-
-	for num, val := range cards {
-		if val == cardId {
-			c.ownerCards[executor] = append(cards[:num], cards[num+1:]...)
-			break
-		}
-	}
+	c.unsavedBurn(cardId, executor)
 
 	return nil
 }
+func (c *Cards) unsavedBurn(cardId utils.CardID, owner utils.UserID) {
+	cards := c.ownerCards[owner]
+	delete(c.cardOwner, cardId)
+	delete(c.cards, cardId)
+
+	for num, val := range cards {
+		if val == cardId {
+			c.ownerCards[owner] = append(cards[:num], cards[num+1:]...)
+			break
+		}
+	}
+}
 
 func (c *Cards) IsFreezed(cardId utils.CardID) bool {
-	if _, ok := c.freezedCard[cardId]; ok {
+	if _, ok := c.freezedPair[cardId]; ok {
 		return true
 	}
 	return false
 }
 
-func (c *Cards) Freeze(cardId utils.CardID, executor utils.UserID) error {
-	if err := c.IsOwner(cardId, executor); err != nil {
+func (c *Cards) Freeze(cardId1, cardId2 utils.CardID, executor utils.UserID) error {
+	if cardId1 == cardId2 {
+		return utils.ErrCardsEqual
+	}
+
+	if err := c.IsOwner(cardId1, executor); err != nil {
+		return err
+	}
+	if err := c.IsOwner(cardId2, executor); err != nil {
 		return err
 	}
 
-	if c.IsFreezed(cardId) {
+	if c.IsFreezed(cardId1) {
+		return utils.ErrCardFreezed
+	}
+	if c.IsFreezed(cardId2) {
 		return utils.ErrCardFreezed
 	}
 
-	c.freezedCard[cardId] = c.freezeTime + uint64(time.Now().Unix())
+	c.freezedPair[cardId1] = cardId2
+	c.freezedPair[cardId2] = cardId1
+
+	c.freezedUntil[cardId1.ToString()] = c.freezeTime + c.system.GetCurrentTime()
 
 	return nil
 }
@@ -204,14 +235,56 @@ func (c *Cards) UnFreeze(cardId utils.CardID, executor utils.UserID) error {
 		return utils.ErrCardNotFreezed
 	}
 
-	finishFreezeTime := c.freezedCard[cardId]
+	finishFreezeTime, ok := c.freezedUntil[cardId.ToString()]
+	if ok {
+		if finishFreezeTime > c.system.GetCurrentTime() {
+			return utils.ErrCardFreezed
+		}
+		delete(c.freezedUntil, cardId.ToString())
 
-	if finishFreezeTime > uint64(time.Now().Unix()) {
-		return utils.ErrCardFreezed
+	}
+	freezePairCard := c.freezedPair[cardId]
+	if !ok {
+		finishFreezeTime = c.freezedUntil[freezePairCard.ToString()]
+		if finishFreezeTime > c.system.GetCurrentTime() {
+			return utils.ErrCardFreezed
+		}
+		delete(c.freezedUntil, freezePairCard.ToString())
 	}
 
-	delete(c.freezedCard, cardId)
-	// todo add rewards to freeze
+	delete(c.freezedPair, cardId)
+	delete(c.freezedPair, freezePairCard)
+
+	mixedCard := c.mixedCards(cardId, freezePairCard)
+
+	c.unsavedBurn(cardId, executor)
+	c.unsavedBurn(freezePairCard, executor)
+	c.addCard(mixedCard, executor)
 
 	return nil
+}
+
+// mixedCards - mixed 2 cards. Attantion: card must exist!!!
+func (c *Cards) mixedCards(cardId1, cardId2 utils.CardID) (res Card) {
+	cardParam1, _ := c.GetCardProperties(cardId1)
+	cardParam2, _ := c.GetCardProperties(cardId2)
+
+	res.Params.Hp = getRandBeetweenUint64(cardParam1.Hp, cardParam2.Hp)
+	res.Params.Accuracy = getRandBeetweenUint64(cardParam1.Accuracy, cardParam2.Accuracy)
+	if cardParam1.Level > cardParam2.Level {
+		res.Params.Level = cardParam1.Level
+	} else {
+		res.Params.Level = cardParam2.Level
+	}
+	res.Params.Strength = getRandBeetweenUint64(cardParam1.Strength, cardParam2.Strength)
+	res.Id = utils.CardID(utils.Hash(res.Params))
+	return
+}
+
+func getRandBeetweenUint64(p1, p2 uint64) uint64 {
+	if p1 > p2 {
+		p2, p1 = p1, p2
+	}
+	diff := p2 - p1
+	return p1 + rand.Uint64()%(diff+MIXED_ADD)
 }

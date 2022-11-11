@@ -47,13 +47,13 @@ func TestCardSet_AddCardToSet(t *testing.T) {
 		require.NoError(t, err)
 		err = cardSet.AddCardToSet("user1", "card2")
 		require.Error(t, err)
-		assert.True(t, errors.Is(err, utils.ErrTooMuchCards))
+		assert.True(t, errors.Is(err, utils.ErrSetTooMuchCards))
 	})
 
 	t.Run("Card is alredy in set", func(t *testing.T) {
 		err := cardSet.AddCardToSet("user1", "card1")
 		require.Error(t, err)
-		assert.True(t, errors.Is(err, utils.ErrAlreadyInSet))
+		assert.True(t, errors.Is(err, utils.ErrSetAlreadyInSet))
 	})
 }
 
@@ -86,47 +86,79 @@ func TestCardSet_RemoveCardFromSet(t *testing.T) {
 	t.Run("Card is not in set", func(t *testing.T) {
 		err := cardSet.RemoveCardFromSet("user1", "card3")
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, utils.ErrCardIsNotInSet))
+		assert.True(t, errors.Is(err, utils.ErrSetCardIsNotInSet))
 	})
 }
 
 func TestCardSet_ChangeCardFromSet(t *testing.T) {
 
-	cardMock := mocks.NewCardsI(t)
-	cardMock.On("IsOwner", utils.CardID("card1"), utils.UserID("user1")).Return(nil).Once()
-	cardMock.On("IsOwner", utils.CardID("card2"), utils.UserID("user1")).Return(nil).Once()
-	cardMock.On("IsOwner", utils.CardID("card3"), utils.UserID("user1")).Return(nil).Once()
+	user1 := utils.UserID("user1")
+	user2 := utils.UserID("user2")
 
-	cardSet := contracts.NewCardSet(cardMock, 2)
-	err := cardSet.AddCardToSet("user1", "card1")
+	card0 := utils.CardID("card0")
+	card1 := utils.CardID("card1")
+	card2 := utils.CardID("card2")
+	card3 := utils.CardID("card3")
+	card4 := utils.CardID("card4")
+	card5 := utils.CardID("card5")
+	cardUser2 := utils.CardID("cardUser2")
+	unexistingCard := utils.CardID("unexistingCard")
+
+	cardMock := mocks.NewCardsI(t)
+
+	cardMock.On("IsOwner", card0, user1).Return(nil).Once()
+	cardMock.On("IsOwner", card1, user1).Return(nil).Once()
+	cardMock.On("IsOwner", card2, user1).Return(nil).Twice()
+	cardMock.On("IsOwner", card3, user1).Return(nil).Once()
+	cardMock.On("IsOwner", card5, user1).Return(nil).Once()
+
+	cardMock.On("IsOwner", cardUser2, user1).Return(utils.ErrPermDenie).Once()
+	cardMock.On("IsOwner", unexistingCard, user1).Return(utils.ErrCardNotExist).Once()
+
+	cardMock.On("IsOwner", cardUser2, user2).Return(nil).Once()
+
+	cardSet := contracts.NewCardSet(cardMock, 3)
+	err := cardSet.AddCardToSet(user1, card0)
 	require.NoError(t, err, "Error in add card to set")
-	err = cardSet.AddCardToSet("user1", "card2")
+	err = cardSet.AddCardToSet(user1, card1)
+	require.NoError(t, err, "Error in add card to set")
+	err = cardSet.AddCardToSet(user1, card2)
 	require.NoError(t, err, "Error in add card to set")
 
 	t.Run("Correct", func(t *testing.T) {
-		expectedSet := []utils.CardID{"card3", "card2"}
-		err := cardSet.ChangeCardFromSet("user1", "card1", "card3")
+		err := cardSet.ChangeCardFromSet(user1, card0, card3)
 
 		assert.NoError(t, err)
 
-		actualSet := cardSet.GetActualSet("user1")
+		actualSet := cardSet.GetActualSet(user1)
 
-		assert.Equal(t, len(expectedSet), len(actualSet))
-		for _, expectedCard := range expectedSet {
-			assert.Contains(t, actualSet, expectedCard)
-		}
+		assert.Contains(t, actualSet, card3)
+		assert.NotContains(t, actualSet, card0)
 	})
 
-	t.Run("Empty set", func(t *testing.T) {
-		err := cardSet.RemoveCardFromSet("user2", "card1")
-		assert.Error(t, err)
-		assert.True(t, errors.Is(err, utils.ErrSetIsEmpty))
+	t.Run("Card not exist", func(t *testing.T) {
+		err := cardSet.ChangeCardFromSet(user1, card1, unexistingCard)
+		assert.ErrorIs(t, err, utils.ErrCardNotExist)
 	})
 
-	t.Run("Card is not in set", func(t *testing.T) {
-		err := cardSet.RemoveCardFromSet("user1", "card4")
-		assert.Error(t, err)
-		assert.True(t, errors.Is(err, utils.ErrCardIsNotInSet))
+	t.Run("Wrong card owner", func(t *testing.T) {
+		err := cardSet.ChangeCardFromSet(user1, card1, cardUser2)
+		assert.ErrorIs(t, err, utils.ErrPermDenie)
+	})
+
+	t.Run("Card already in set", func(t *testing.T) {
+		err := cardSet.ChangeCardFromSet(user1, card1, card2)
+		assert.ErrorIs(t, err, utils.ErrSetAlreadyInSet)
+	})
+
+	t.Run("Card in not from set", func(t *testing.T) {
+		err := cardSet.ChangeCardFromSet(user1, card4, card5)
+		assert.ErrorIs(t, err, utils.ErrSetCardIsNotInSet)
+	})
+
+	t.Run("Has no set", func(t *testing.T) {
+		err := cardSet.ChangeCardFromSet(user2, card1, cardUser2)
+		assert.ErrorIs(t, err, utils.ErrSetIsEmpty)
 	})
 }
 

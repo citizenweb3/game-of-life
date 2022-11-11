@@ -58,6 +58,11 @@ type BurnRequest struct {
 	Executor string
 	CardID   string
 }
+type FreezeRequest struct {
+	Executor string
+	CardID1  string
+	CardID2  string
+}
 
 type TransferRequest struct {
 	Executor string
@@ -88,6 +93,15 @@ type GetCardPropertiesResponce struct {
 }
 
 // system
+
+type MoveForwardRequest struct {
+	AddUnixTime int64
+}
+
+type MoveForwardResponse struct {
+	TotalMoved  int64
+	CurrentTime int64
+}
 type UserInfoApi struct {
 	UserID     string
 	Volts      uint64
