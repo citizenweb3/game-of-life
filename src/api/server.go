@@ -20,11 +20,11 @@ func InitializeRoutes(
 	router := mux.NewRouter()
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
 
-	// system
+	// System
 	router.HandleFunc("/system/user/list", systemController.GetUserList).Methods("GET")
 	router.HandleFunc("/system/user/add", systemController.GenerateUsers).Methods("POST")
 	router.HandleFunc("/system/user", systemController.GetUserInfo).Methods("GET")
-	router.HandleFunc("/system/gotothefuture", systemController.MoveForward).Methods("GET")
+	router.HandleFunc("/system/gotothefuture", systemController.MoveForward).Methods("POST")
 
 	// Cards
 	router.HandleFunc("/cards/mint", cardsController.MintNewCard).Methods("POST")
