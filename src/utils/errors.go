@@ -23,7 +23,8 @@ var (
 
 // battle
 var (
-	ErrBattleUserIsNotReady = errors.New("Rival is not ready to battle")
+	ErrBattleUserIsNotReady         = errors.New("Rival is not ready to battle")
+	ErrBattleUserHasNoOneCardsInSet = errors.New("User has no one cards in set")
 )
 
 // system

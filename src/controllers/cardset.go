@@ -78,14 +78,14 @@ func (csc *CardSetController) AddCardToSet(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if p.CardID == "" || p.Executor == "" {
+	if p.CardID == "" || p.Executor == "" || p.NumInSet < 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("content-type", "application/json")
 		json.NewEncoder(w).Encode("card id and execuer are required")
 		return
 	}
 
-	err = csc.cardSetContract.AddCardToSet(utils.UserID(p.Executor), utils.CardID(p.CardID))
+	err = csc.cardSetContract.AddCardToSet(utils.UserID(p.Executor), p.NumInSet, utils.CardID(p.CardID))
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

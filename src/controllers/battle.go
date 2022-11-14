@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"gameoflife/contracts"
 	"gameoflife/utils"
 	"net/http"
@@ -107,6 +108,7 @@ func (bc *BattleController) Battle(w http.ResponseWriter, r *http.Request) {
 		outStr = "Nobody won. Fighting for too long."
 
 	}
+	fmt.Println(outStr)
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")

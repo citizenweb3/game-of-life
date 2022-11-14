@@ -15,6 +15,7 @@ type CardsI interface {
 	Transfer(cardId utils.CardID, executor, to utils.UserID) error
 	Burn(cardId utils.CardID, executor utils.UserID) error
 	Freeze(cardId1, cardId2 utils.CardID, executor utils.UserID) error
+	GetFreezeTime(cardId utils.CardID) int64
 	UnFreeze(cardId utils.CardID, executor utils.UserID) error
 	MintNewCard(executor utils.UserID) (utils.CardID, error)
 
@@ -61,6 +62,21 @@ func NewCards(system system.SystemI, freezeTime uint32) *Cards {
 		freezedUntil: map[string]int64{},
 		freezeTime:   int64(freezeTime),
 	}
+}
+func (c *Cards) GetFreezeTime(cardId utils.CardID) int64 {
+	timeFreeze, ok := c.freezedUntil[cardId.ToString()]
+	if ok {
+		return timeFreeze
+	}
+	freezedPair, ok := c.freezedPair[cardId]
+	if !ok {
+		return 0
+	}
+	timeFreeze, ok = c.freezedUntil[freezedPair.ToString()]
+	if !ok {
+		return 0
+	}
+	return timeFreeze
 }
 func (c *Cards) GetCardOwner(cardId utils.CardID) (utils.UserID, error) {
 	card, exist := c.cardOwner[cardId]

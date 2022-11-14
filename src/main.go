@@ -4,6 +4,7 @@ import (
 	"gameoflife/api"
 	"gameoflife/contracts"
 	"gameoflife/controllers"
+	user_interface "gameoflife/controllers/ui"
 	"gameoflife/system"
 	"gameoflife/utils/config"
 )
@@ -15,7 +16,7 @@ func main() {
 	card := contracts.NewCards(system, 1000)
 	cardsController := controllers.NewCardsController(card)
 
-	cardSet := contracts.NewCardSet(card, uint8(100))
+	cardSet := contracts.NewCardSet(card, uint8(5))
 	cardSetController := controllers.NewCardSetController(cardSet, card)
 
 	battle := contracts.NewBattle(cardSet, card, system)
@@ -24,7 +25,10 @@ func main() {
 	au := controllers.NewAutomatisation(system, card, cardSet, battle)
 
 	cfg := config.NewConfigApp()
-	httpServer := api.NewHttpServer(cfg, systemController, cardsController, cardSetController, battleController, au)
+
+	ui := user_interface.NewUI(system, card, cardSet, battle)
+
+	httpServer := api.NewHttpServer(cfg, systemController, cardsController, cardSetController, battleController, au, ui)
 
 	defer httpServer.Stop()
 	httpServer.Start()

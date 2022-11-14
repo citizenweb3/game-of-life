@@ -32,7 +32,6 @@ func NewAutomatisation(
 }
 
 func (a *Automatisation) CreateSystem(w http.ResponseWriter, r *http.Request) {
-
 	var p CreateSystemRequest
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
@@ -54,23 +53,35 @@ func (a *Automatisation) CreateSystem(w http.ResponseWriter, r *http.Request) {
 		p.CardCountFrom, p.CardCountTo = p.CardCountTo, p.CardCountFrom
 	}
 
-	userCount := rand.Intn(p.UserCountTo-p.UserCountFrom) + p.UserCountFrom
+	userCount := p.UserCountFrom
+	if p.UserCountTo != p.UserCountFrom {
+		userCount += rand.Intn(p.UserCountTo - p.UserCountFrom)
+	}
 
 	for userNum := 0; userNum < userCount; userNum++ {
 		userName := fmt.Sprintf("random_user_%d", userNum)
 		userId := utils.UserID(userName)
 		err := a.system.CreateUserWithRamdomParam(userId)
+
 		if err != nil {
 			continue
 		}
-		cardsCount := rand.Intn(p.CardCountTo-p.CardCountFrom) + p.CardCountFrom
+
+		cardsCount := p.CardCountFrom
+		if p.CardCountTo != p.CardCountFrom {
+			cardsCount += rand.Intn(p.CardCountTo - p.CardCountFrom)
+		}
+
+		fmt.Println("user created card count:", cardsCount)
+		cardNumInSet := 0
 		for cardNum := 0; cardNum < cardsCount; cardNum++ {
 			cardId, err := a.cards.MintNewCard(userId)
 			if err != nil {
 				continue
 			}
 			if rand.Int()%2 == 0 {
-				a.cardsSet.AddCardToSet(userId, cardId)
+				a.cardsSet.AddCardToSet(userId, cardNumInSet, cardId)
+				cardNumInSet++
 			}
 		}
 

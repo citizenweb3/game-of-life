@@ -109,8 +109,13 @@ func (b *Battle) Battle(executor, rival utils.UserID) (int, error) {
 	}
 
 	cardSetExecutor := b.cardSetContract.GetActualSetWithAttribute(executor)
+	if len(cardSetExecutor) == 0 {
+		return 0, utils.ErrBattleUserHasNoOneCardsInSet
+	}
 	cardSetRival := b.cardSetContract.GetActualSetWithAttribute(rival)
-
+	if len(cardSetRival) == 0 {
+		return 0, utils.ErrBattleUserHasNoOneCardsInSet
+	}
 	cardParamExecutor, err := b.ModifyCards(executor, cardSetExecutor)
 	if err != nil {
 		return 0, err
@@ -162,7 +167,7 @@ func (b *Battle) battleStep(cardSet1, cardSet2 []CardParams) bool {
 }
 
 func (b *Battle) battleStepByStep(cardSet1, cardSet2 []CardParams, maxStep int) int {
-	fmt.Println("Start battle modified cardSet1=", cardSet1, " modified cardSet2=", cardSet2)
+	fmt.Println("Start battle modified cardSet1=", cardSet1, " modified cardSet2=", cardSet2, "maxStep", maxStep)
 	for i := 0; i < maxStep; i++ {
 		if b.battleStep(cardSet1, cardSet2) {
 			return -1
@@ -172,7 +177,6 @@ func (b *Battle) battleStepByStep(cardSet1, cardSet2 []CardParams, maxStep int) 
 			return 1
 		}
 		fmt.Println("Step ", i, " after rival hit executor cardSet1=", cardSet1, " cardSet2=", cardSet2)
-
 	}
 	return 0
 }

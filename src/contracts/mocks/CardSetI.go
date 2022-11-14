@@ -17,13 +17,13 @@ type CardSetI struct {
 	mock.Mock
 }
 
-// AddCardToSet provides a mock function with given fields: executor, cardId
-func (_m *CardSetI) AddCardToSet(executor utils.UserID, cardId utils.CardID) error {
-	ret := _m.Called(executor, cardId)
+// AddCardToSet provides a mock function with given fields: executor, numInSet, cardId
+func (_m *CardSetI) AddCardToSet(executor utils.UserID, numInSet int, cardId utils.CardID) error {
+	ret := _m.Called(executor, numInSet, cardId)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(utils.UserID, utils.CardID) error); ok {
-		r0 = rf(executor, cardId)
+	if rf, ok := ret.Get(0).(func(utils.UserID, int, utils.CardID) error); ok {
+		r0 = rf(executor, numInSet, cardId)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -61,6 +61,22 @@ func (_m *CardSetI) GetActualSet(user utils.UserID) []utils.CardID {
 	return r0
 }
 
+// GetActualSetWithAttribute provides a mock function with given fields: user
+func (_m *CardSetI) GetActualSetWithAttribute(user utils.UserID) []contracts.CardWithUserInfluence {
+	ret := _m.Called(user)
+
+	var r0 []contracts.CardWithUserInfluence
+	if rf, ok := ret.Get(0).(func(utils.UserID) []contracts.CardWithUserInfluence); ok {
+		r0 = rf(user)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]contracts.CardWithUserInfluence)
+		}
+	}
+
+	return r0
+}
+
 // GetUserAttributes provides a mock function with given fields: user
 func (_m *CardSetI) GetUserAttributes(user utils.UserID) []contracts.CardParams {
 	ret := _m.Called(user)
@@ -91,13 +107,13 @@ func (_m *CardSetI) RemoveCardFromSet(executor utils.UserID, cardId utils.CardID
 	return r0
 }
 
-// SetUserAttributes provides a mock function with given fields: executor, values
-func (_m *CardSetI) SetUserAttributes(executor utils.UserID, values []contracts.CardParams) error {
-	ret := _m.Called(executor, values)
+// SetUserAttribute provides a mock function with given fields: executor, numInSet, value
+func (_m *CardSetI) SetUserAttribute(executor utils.UserID, numInSet uint8, value contracts.CardParams) error {
+	ret := _m.Called(executor, numInSet, value)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(utils.UserID, []contracts.CardParams) error); ok {
-		r0 = rf(executor, values)
+	if rf, ok := ret.Get(0).(func(utils.UserID, uint8, contracts.CardParams) error); ok {
+		r0 = rf(executor, numInSet, value)
 	} else {
 		r0 = ret.Error(0)
 	}

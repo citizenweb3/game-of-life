@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"gameoflife/controllers"
+	user_interface "gameoflife/controllers/ui"
 	"gameoflife/utils/config"
 	"net/http"
 
@@ -16,6 +17,7 @@ func InitializeRoutes(
 	cardSetController controllers.CardSetControllerI,
 	battleController controllers.BattleControllerI,
 	automat *controllers.Automatisation,
+	ui *user_interface.UI,
 ) *mux.Router {
 
 	router := mux.NewRouter()
@@ -51,6 +53,13 @@ func InitializeRoutes(
 	router.HandleFunc("/battle/isopen", battleController.IsOpenToBattel).Methods("GET")
 	router.HandleFunc("/battle/ready", battleController.ReadyToBattle).Methods("POST")
 
+	// ui
+	router.HandleFunc("/ui/users", ui.GetUsersPage).Methods("GET")
+	router.HandleFunc("/ui/userslist", ui.GetUsersList).Methods("POST")
+	router.HandleFunc("/ui/cards", ui.GetCardsPage).Methods("GET")
+	router.HandleFunc("/ui/cardsset", ui.GetCardSetPage).Methods("GET")
+	router.HandleFunc("/ui/battle", ui.GetBattlePage).Methods("GET")
+
 	return router
 
 }
@@ -68,10 +77,11 @@ func NewHttpServer(
 	csc controllers.CardSetControllerI,
 	bc controllers.BattleControllerI,
 	au *controllers.Automatisation,
+	ui *user_interface.UI,
 ) *HttpServer {
 	return &HttpServer{
 		cfg:    cfg,
-		router: InitializeRoutes(sc, cc, csc, bc, au),
+		router: InitializeRoutes(sc, cc, csc, bc, au, ui),
 		server: nil,
 	}
 }

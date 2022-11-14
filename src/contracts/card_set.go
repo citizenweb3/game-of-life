@@ -1,6 +1,7 @@
 package contracts
 
 import (
+	"fmt"
 	"gameoflife/utils"
 )
 
@@ -11,7 +12,7 @@ type CardWithUserInfluence struct {
 
 type CardSetI interface {
 	GetActualSet(user utils.UserID) []utils.CardID
-	AddCardToSet(executor utils.UserID, cardId utils.CardID) error
+	AddCardToSet(executor utils.UserID, numInSet int, cardId utils.CardID) error
 	RemoveCardFromSet(executor utils.UserID, cardId utils.CardID) error
 	ChangeCardFromSet(executor utils.UserID, cardIdLast, cardIdNew utils.CardID) error
 
@@ -38,7 +39,11 @@ func NewCardSet(cardsContract CardsI, countCardInSet uint8) *CardSet {
 	}
 }
 
-func (cs *CardSet) AddCardToSet(executor utils.UserID, cardId utils.CardID) error {
+func (cs *CardSet) AddCardToSet(executor utils.UserID, numInSet int, cardId utils.CardID) error {
+	fmt.Println("AddCardToSet to pos", numInSet, " card", cardId)
+	if numInSet < 0 {
+		return utils.ErrSetTooMuchCards
+	}
 	err := cs.cardsContract.IsOwner(cardId, executor)
 	if err != nil {
 		return err
@@ -46,11 +51,12 @@ func (cs *CardSet) AddCardToSet(executor utils.UserID, cardId utils.CardID) erro
 
 	executorSet, ok := cs.cardSet[executor]
 	if !ok {
-		cs.cardSet[executor] = []utils.CardID{cardId}
+		cs.cardSet[executor] = make([]utils.CardID, cs.countCardInSet)
+		cs.cardSet[executor][0] = cardId
 		return nil
 	}
 
-	if ok && len(executorSet) == int(cs.countCardInSet) {
+	if numInSet >= int(cs.countCardInSet) {
 		return utils.ErrSetTooMuchCards
 	}
 
@@ -59,8 +65,7 @@ func (cs *CardSet) AddCardToSet(executor utils.UserID, cardId utils.CardID) erro
 			return utils.ErrSetAlreadyInSet
 		}
 	}
-	executorSet = append(executorSet, cardId)
-	cs.cardSet[executor] = executorSet
+	cs.cardSet[executor][numInSet] = cardId
 
 	return nil
 }
@@ -73,7 +78,7 @@ func (cs *CardSet) RemoveCardFromSet(executor utils.UserID, cardId utils.CardID)
 
 	for num, cardIdInSet := range executorSet {
 		if cardIdInSet == cardId {
-			cs.cardSet[executor] = append(executorSet[:num], executorSet[num+1:]...)
+			cs.cardSet[executor][num] = ""
 			return nil
 		}
 	}
@@ -111,6 +116,7 @@ func (cs *CardSet) ChangeCardFromSet(executor utils.UserID, cardIdLast, cardIdNe
 }
 
 func (cs *CardSet) GetActualSet(user utils.UserID) []utils.CardID {
+	fmt.Println("GetActualSet", cs.cardSet[user])
 	return cs.cardSet[user]
 }
 

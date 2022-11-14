@@ -23,7 +23,7 @@ func TestCardSet_AddCardToSet(t *testing.T) {
 		cardSetCorrect := contracts.NewCardSet(cardMock, 2)
 		expectedSet := []utils.CardID{"card1"}
 
-		err := cardSetCorrect.AddCardToSet("user1", "card1")
+		err := cardSetCorrect.AddCardToSet("user1", 0, "card1")
 
 		require.NoError(t, err)
 
@@ -33,25 +33,16 @@ func TestCardSet_AddCardToSet(t *testing.T) {
 	})
 
 	cardSet := contracts.NewCardSet(cardMock, 2)
-	cardSet.AddCardToSet("user1", "card1")
+	cardSet.AddCardToSet("user1", 0, "card1")
 
 	t.Run("Is not owner", func(t *testing.T) {
-		err := cardSet.AddCardToSet("user2", "card1")
+		err := cardSet.AddCardToSet("user2", 0, "card1")
 		require.Error(t, err)
 		assert.True(t, errors.Is(err, utils.ErrPermDenie))
 	})
 
-	t.Run("Set is alredy full", func(t *testing.T) {
-		cardSet := contracts.NewCardSet(cardMock, 1)
-		err := cardSet.AddCardToSet("user1", "card1")
-		require.NoError(t, err)
-		err = cardSet.AddCardToSet("user1", "card2")
-		require.Error(t, err)
-		assert.True(t, errors.Is(err, utils.ErrSetTooMuchCards))
-	})
-
 	t.Run("Card is alredy in set", func(t *testing.T) {
-		err := cardSet.AddCardToSet("user1", "card1")
+		err := cardSet.AddCardToSet("user1", 0, "card1")
 		require.Error(t, err)
 		assert.True(t, errors.Is(err, utils.ErrSetAlreadyInSet))
 	})
@@ -63,9 +54,9 @@ func TestCardSet_RemoveCardFromSet(t *testing.T) {
 	cardMock.On("IsOwner", utils.CardID("card2"), utils.UserID("user1")).Return(nil).Once()
 
 	cardSet := contracts.NewCardSet(cardMock, 2)
-	err := cardSet.AddCardToSet("user1", "card1")
+	err := cardSet.AddCardToSet("user1", 0, "card1")
 	require.NoError(t, err, "Error in add card to set")
-	err = cardSet.AddCardToSet("user1", "card2")
+	err = cardSet.AddCardToSet("user1", 1, "card2")
 	require.NoError(t, err, "Error in add card to set")
 
 	t.Run("Correct", func(t *testing.T) {
@@ -118,11 +109,11 @@ func TestCardSet_ChangeCardFromSet(t *testing.T) {
 	cardMock.On("IsOwner", cardUser2, user2).Return(nil).Once()
 
 	cardSet := contracts.NewCardSet(cardMock, 3)
-	err := cardSet.AddCardToSet(user1, card0)
+	err := cardSet.AddCardToSet(user1, 0, card0)
 	require.NoError(t, err, "Error in add card to set")
-	err = cardSet.AddCardToSet(user1, card1)
+	err = cardSet.AddCardToSet(user1, 1, card1)
 	require.NoError(t, err, "Error in add card to set")
-	err = cardSet.AddCardToSet(user1, card2)
+	err = cardSet.AddCardToSet(user1, 2, card2)
 	require.NoError(t, err, "Error in add card to set")
 
 	t.Run("Correct", func(t *testing.T) {

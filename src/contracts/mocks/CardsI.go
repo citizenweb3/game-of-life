@@ -87,6 +87,20 @@ func (_m *CardsI) GetCardProperties(cardId utils.CardID) (contracts.CardParams, 
 	return r0, r1
 }
 
+// GetFreezeTime provides a mock function with given fields: cardId
+func (_m *CardsI) GetFreezeTime(cardId utils.CardID) int64 {
+	ret := _m.Called(cardId)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(utils.CardID) int64); ok {
+		r0 = rf(cardId)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	return r0
+}
+
 // GetOwnersCards provides a mock function with given fields: executor
 func (_m *CardsI) GetOwnersCards(executor utils.UserID) []contracts.Card {
 	ret := _m.Called(executor)

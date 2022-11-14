@@ -29,6 +29,7 @@ type GetActualSetResponseElement struct {
 
 type AddCardToSetRequest struct {
 	Executor string
+	NumInSet int
 	CardID   string
 }
 

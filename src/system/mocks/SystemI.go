@@ -45,6 +45,22 @@ func (_m *SystemI) GetCurrentTime() int64 {
 	return r0
 }
 
+// GetUserList provides a mock function with given fields:
+func (_m *SystemI) GetUserList() []utils.UserID {
+	ret := _m.Called()
+
+	var r0 []utils.UserID
+	if rf, ok := ret.Get(0).(func() []utils.UserID); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]utils.UserID)
+		}
+	}
+
+	return r0
+}
+
 // GetUserParam provides a mock function with given fields: userID
 func (_m *SystemI) GetUserParam(userID utils.UserID) (system.UsersParam, error) {
 	ret := _m.Called(userID)
