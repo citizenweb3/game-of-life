@@ -10,6 +10,11 @@ Example of game on golang.
 # How to use
 
 send query to localhost:8000/
+or
+visit localhost:8000/ui/user and use ui.
+To quick start use GenerateRandomSystem.
+ps. result of battle and process you could find in console
+
 
 ## Examples
 ### POST|PATHC|DELETE
