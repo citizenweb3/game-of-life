@@ -6,11 +6,13 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sort"
+	"strings"
 )
 
 var cardSetPage = `<html><body> 
 <head> ` + style + ` </head>
-<body> ` + getMenu() + `
+<body> ` + GetMenu("cardsset") + `
 <h2>Card Set:</h2>
 
 {{block "batch" .}}
@@ -65,12 +67,14 @@ function addCardToSet(userId, numInSet) {
 	xhr.open("POST", "/set/card", true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	try { xhr.send(JSON.stringify({"Executor": userId, "CardID": cardId, "NumInSet": numInSet}));} catch (err) { console.log(err) }
+	document.location.reload(true)
 }
 function removeCardFromSet(userId, cardId) {
 	var xhr = new XMLHttpRequest();
 	xhr.open("DELETE", "/set/card", true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	try { xhr.send(JSON.stringify({"Executor": userId, "CardID": cardId}));} catch (err) { console.log(err) }
+	document.location.reload(true)
 }
 function changeCardFromSet(userId, cardIdLast) {
 	var cardIdNew = document.getElementById('card_id').value
@@ -78,6 +82,7 @@ function changeCardFromSet(userId, cardIdLast) {
 	xhr.open("PATCH", "/set/card", true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	try { xhr.send(JSON.stringify({"Executor": userId, "CardIDLast": cardIdLast, "CardIDNew": cardIdNew}));} catch (err) { console.log(err) }
+	document.location.reload(true)
 }
 </script>
 </body></html>`
@@ -112,7 +117,10 @@ func (ui *UI) GetCardSetPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var userIds []UserIDUI
-	for _, user := range ui.system.GetUserList() {
+	usersIDs := ui.system.GetUserList()
+	sort.Slice(usersIDs, func(i, j int) bool { return -1 == strings.Compare(usersIDs[i].ToString(), usersIDs[j].ToString()) })
+
+	for _, user := range usersIDs {
 		userIds = append(userIds, UserIDUI{UserId: user.ToString()})
 	}
 

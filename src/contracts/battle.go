@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"gameoflife/system"
 	"gameoflife/utils"
-	"math/rand"
 )
 
 type BattleI interface {
@@ -131,11 +130,11 @@ func (b *Battle) Battle(executor, rival utils.UserID) (int, error) {
 }
 
 func randDammage(strength, accuracy uint64) uint64 {
-	dammage := rand.Uint64() % accuracy
+	dammage := utils.GetRandomNumberUint64(accuracy)
 	if strength > dammage {
 		return 0
 	}
-	return dammage
+	return dammage - strength
 }
 
 func (b *Battle) battleStep(cardSet1, cardSet2 []CardParams) bool {

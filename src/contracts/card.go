@@ -1,7 +1,6 @@
 package contracts
 
 import (
-	"math/rand"
 	"net/url"
 
 	"gameoflife/system"
@@ -31,8 +30,9 @@ type CardsI interface {
 type CardParams struct {
 	Hp       uint64
 	Level    uint8
-	Strength uint64
-	Accuracy uint64
+	Strength uint64 // атака
+	Accuracy uint64 // точность
+	// deffence количество залоченых гидрогенов
 }
 
 type Card struct {
@@ -145,10 +145,10 @@ func (c *Cards) addCard(card Card, owner utils.UserID) {
 
 func generarateRandomCardParams() CardParams {
 	return CardParams{
-		Hp:       rand.Uint64() % 100,
-		Level:    uint8(rand.Uint32() % 5),
-		Strength: rand.Uint64() % 10,
-		Accuracy: rand.Uint64() % 100,
+		Hp:       utils.GetRandomNumberUint64(100),
+		Level:    uint8(utils.GetRandomNumberUint64(5)),
+		Strength: utils.GetRandomNumberUint64(10),
+		Accuracy: utils.GetRandomNumberUint64(100),
 	}
 }
 
@@ -302,5 +302,5 @@ func getRandBeetweenUint64(p1, p2 uint64) uint64 {
 		p2, p1 = p1, p2
 	}
 	diff := p2 - p1
-	return p1 + rand.Uint64()%(diff+MIXED_ADD)
+	return p1 + utils.GetRandomNumberUint64(diff+MIXED_ADD)
 }

@@ -103,6 +103,13 @@ type MoveForwardResponse struct {
 	TotalMoved  int64
 	CurrentTime int64
 }
+type AddUserParamRequest struct {
+	UserID     string
+	Volts      int64
+	Amperes    int64
+	Cyberlinks int64
+	Kw         int64
+}
 type UserInfoApi struct {
 	UserID     string
 	Volts      uint64

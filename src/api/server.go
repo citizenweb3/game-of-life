@@ -27,6 +27,7 @@ func InitializeRoutes(
 	// System
 	router.HandleFunc("/system/user/list", systemController.GetUserList).Methods("GET")
 	router.HandleFunc("/system/user/add", systemController.GenerateUser).Methods("POST")
+	router.HandleFunc("/system/user/param", systemController.AddUserParam).Methods("POST")
 	router.HandleFunc("/system/user", systemController.GetUserInfo).Methods("GET")
 	router.HandleFunc("/system/gotothefuture", systemController.MoveForward).Methods("POST")
 
@@ -54,8 +55,7 @@ func InitializeRoutes(
 	router.HandleFunc("/battle/ready", battleController.ReadyToBattle).Methods("POST")
 
 	// ui
-	router.HandleFunc("/ui/users", ui.GetUsersPage).Methods("GET")
-	router.HandleFunc("/ui/userslist", ui.GetUsersList).Methods("POST")
+	router.HandleFunc("/ui/system", ui.GetSystemPage).Methods("GET")
 	router.HandleFunc("/ui/cards", ui.GetCardsPage).Methods("GET")
 	router.HandleFunc("/ui/cardsset", ui.GetCardSetPage).Methods("GET")
 	router.HandleFunc("/ui/battle", ui.GetBattlePage).Methods("GET")

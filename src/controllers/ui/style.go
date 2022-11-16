@@ -2,7 +2,8 @@ package userinterface
 
 var menuStyle = `
 .vertical-menu {
-	width: 200px;
+	width: 100%;
+  height: 100px;
 }
 
 .vertical-menu a {
@@ -11,6 +12,7 @@ var menuStyle = `
 	display: block;
 	padding: 12px;
 	text-decoration: none;
+  float: left;
 }
 
 .vertical-menu a:hover {

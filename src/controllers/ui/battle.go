@@ -5,11 +5,13 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sort"
+	"strings"
 )
 
 var battlePage = `<html><body> 
 <head> ` + style + ` </head>
-<body> ` + getMenu() + `
+<body> ` + GetMenu("battle") + `
 <h2>Battle</h2>
 
 {{block "batch" .}}
@@ -72,6 +74,7 @@ function closeToBattle() {
 	xhr.open("POST", "/battle/ready", true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	try { xhr.send(JSON.stringify({"Executor": userId, "Ready": false}));} catch (err) { console.log(err) }
+	document.location.reload(true)
 }
 function openToBattle() {
 	var userId = document.getElementById('user_id_to_open').value
@@ -79,6 +82,7 @@ function openToBattle() {
 	xhr.open("POST", "/battle/ready", true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	try { xhr.send(JSON.stringify({"Executor": userId, "Ready": true}));} catch (err) { console.log(err) }
+	document.location.reload(true)
 }
 </script>
 </body></html>`
@@ -88,7 +92,11 @@ func (ui *UI) GetBattlePage(w http.ResponseWriter, r *http.Request) {
 	var userIds []UserIDUI
 	var openToBattle []UserIDUI
 	var notOpenToBattle []UserIDUI
-	for _, user := range ui.system.GetUserList() {
+
+	users := ui.system.GetUserList()
+	sort.Slice(users, func(i, j int) bool { return -1 == strings.Compare(users[i].ToString(), users[j].ToString()) })
+
+	for _, user := range users {
 		userIds = append(userIds, UserIDUI{UserId: user.ToString()})
 		if ui.battle.IsOpenToBattel(user) {
 			openToBattle = append(openToBattle, UserIDUI{UserId: user.ToString()})

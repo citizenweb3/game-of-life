@@ -6,11 +6,13 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sort"
+	"strings"
 )
 
 var cardsPage = `<html>
 <head> ` + style + ` </head>
-<body> ` + getMenu() + `
+<body> ` + GetMenu("cards") + `
 
 {{block "batch" .}}
 <h2>User {{.UserId}} cards</h2>
@@ -122,7 +124,10 @@ type CardsInfoUI struct {
 
 func (ui *UI) GetCardsPage(w http.ResponseWriter, r *http.Request) {
 	userId := r.URL.Query().Get("user_id")
+
 	users := ui.system.GetUserList()
+	sort.Slice(users, func(i, j int) bool { return -1 == strings.Compare(users[i].ToString(), users[j].ToString()) })
+
 	var userIds []UserIDUI
 	for _, user := range users {
 		userIds = append(userIds, UserIDUI{UserId: user.ToString()})

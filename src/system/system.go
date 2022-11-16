@@ -11,6 +11,7 @@ type SystemI interface {
 	MoveCurrentTimeForvard(int64) int64
 	CreateUserWithRamdomParam(user utils.UserID) error
 	GetUserList() []utils.UserID
+	AddUserParam(userId utils.UserID, amperes, volts, cyberlinks, kw int64) error
 }
 
 type System struct {
@@ -23,6 +24,19 @@ func NewSystem() *System {
 		Users:           map[utils.UserID]UsersParam{},
 		moveForvardTime: 0,
 	}
+}
+func (s *System) AddUserParam(userId utils.UserID, amperes, volts, cyberlinks, kw int64) error {
+	user, ok := s.Users[userId]
+	if !ok {
+		return utils.ErrSystemUserNotExist
+	}
+	user.Amperes = uint64(int64(user.Amperes) + amperes)
+	user.Volts = uint64(int64(user.Volts) + volts)
+	user.Cyberlinks = uint64(int64(user.Cyberlinks) + cyberlinks)
+	user.Kw = uint64(int64(user.Kw) + kw)
+	s.Users[userId] = user
+
+	return nil
 }
 
 func (s *System) CreateUserWithRamdomParam(user utils.UserID) error {

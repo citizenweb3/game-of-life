@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"gameoflife/system"
 	"gameoflife/utils"
-	"math/rand"
 	"net/http"
 )
 
 type SystemControllerI interface {
 	GetUserList(w http.ResponseWriter, r *http.Request)
-	GenerateUser(w http.ResponseWriter, r *http.Request)
 	GetUserInfo(w http.ResponseWriter, r *http.Request)
+
+	GenerateUser(w http.ResponseWriter, r *http.Request)
+	AddUserParam(w http.ResponseWriter, r *http.Request)
+
 	MoveForward(w http.ResponseWriter, r *http.Request)
 }
 
@@ -24,6 +26,28 @@ func NewSystemController(system *system.System) *SystemController {
 	return &SystemController{
 		System: system,
 	}
+}
+
+func (sc *SystemController) AddUserParam(w http.ResponseWriter, r *http.Request) {
+	var p AddUserParamRequest
+	err := json.NewDecoder(r.Body).Decode(&p)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("content-type", "application/json")
+		json.NewEncoder(w).Encode("error in decode:" + err.Error())
+		return
+	}
+
+	err = sc.System.AddUserParam(utils.UserID(p.UserID), p.Amperes, p.Volts, p.Cyberlinks, p.Kw)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Header().Set("content-type", "application/json")
+		json.NewEncoder(w).Encode("Can't find user:" + err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("content-type", "application/json")
+	json.NewEncoder(w).Encode("done")
 }
 
 func (sc *SystemController) GetUserList(w http.ResponseWriter, r *http.Request) {
@@ -140,5 +164,5 @@ func (sc *SystemController) GetUserInfo(w http.ResponseWriter, r *http.Request) 
 }
 
 func getRandomUserID() string {
-	return fmt.Sprintf("random_user_%d", rand.Int31n(10000000))
+	return fmt.Sprintf("random_user_%d", utils.GetRandomNumberInt64(100000))
 }

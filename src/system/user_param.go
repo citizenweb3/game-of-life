@@ -1,6 +1,8 @@
 package system
 
-import "math/rand"
+import (
+	"gameoflife/utils"
+)
 
 type UsersParam struct {
 	Volts      uint64
@@ -26,9 +28,9 @@ func (up *UsersParam) GetKw() uint64 {
 
 func GenerateRandomUserParam() UsersParam {
 	return UsersParam{
-		Volts:      rand.Uint64() % 1000,
-		Amperes:    rand.Uint64() % 1000,
-		Cyberlinks: rand.Uint64() % 1000,
-		Kw:         rand.Uint64() % 1000,
+		Volts:      utils.GetRandomNumberUint64(1000),
+		Amperes:    utils.GetRandomNumberUint64(1000),
+		Cyberlinks: utils.GetRandomNumberUint64(1000),
+		Kw:         utils.GetRandomNumberUint64(1000),
 	}
 }
