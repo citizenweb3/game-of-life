@@ -19,6 +19,7 @@ var (
 	ErrSetCardIsNotInSet = errors.New("Card is not from set")
 	ErrSetAlreadyInSet   = errors.New("Card already in set")
 	ErrOutOfSetRange     = errors.New("Out of set range")
+	ErrSetTooParams      = errors.New("Influence to one of param more than 100%")
 )
 
 // battle
@@ -31,4 +32,5 @@ var (
 var (
 	ErrSystemUserAlreadyExist = errors.New("User already exist")
 	ErrSystemUserNotExist     = errors.New("User not exist")
+	ErrSystemNotEnoughH       = errors.New("Not enough hydrogen")
 )

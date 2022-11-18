@@ -11,7 +11,7 @@ type SystemI interface {
 	MoveCurrentTimeForvard(int64) int64
 	CreateUserWithRamdomParam(user utils.UserID) error
 	GetUserList() []utils.UserID
-	AddUserParam(userId utils.UserID, amperes, volts, cyberlinks, kw int64) error
+	AddUserParam(userId utils.UserID, amperes, volts, cyberlinks, kw, hydrogen int64) error
 }
 
 type System struct {
@@ -25,7 +25,18 @@ func NewSystem() *System {
 		moveForvardTime: 0,
 	}
 }
-func (s *System) AddUserParam(userId utils.UserID, amperes, volts, cyberlinks, kw int64) error {
+
+func (s *System) LockHydrogen(userId utils.UserID, count uint64) error {
+	user, ok := s.Users[userId]
+	if !ok {
+		return utils.ErrSystemUserNotExist
+	}
+	err := user.LockHydogen(count)
+	s.Users[userId] = user
+	return err
+}
+
+func (s *System) AddUserParam(userId utils.UserID, amperes, volts, cyberlinks, kw, hydrogen int64) error {
 	user, ok := s.Users[userId]
 	if !ok {
 		return utils.ErrSystemUserNotExist
@@ -34,6 +45,7 @@ func (s *System) AddUserParam(userId utils.UserID, amperes, volts, cyberlinks, k
 	user.Volts = uint64(int64(user.Volts) + volts)
 	user.Cyberlinks = uint64(int64(user.Cyberlinks) + cyberlinks)
 	user.Kw = uint64(int64(user.Kw) + kw)
+	user.Hydrogen = uint64(int64(user.Hydrogen) + hydrogen)
 	s.Users[userId] = user
 
 	return nil

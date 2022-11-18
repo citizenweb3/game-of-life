@@ -71,7 +71,8 @@ func (cc *CardsController) MintNewCard(w http.ResponseWriter, r *http.Request) {
 		UserID:   p.UserID,
 		Hp:       params.Hp,
 		Level:    params.Level,
-		Strength: params.Strength,
+		Deffence: params.Deffence,
+		Damage:   params.Damage,
 		Accuracy: params.Accuracy,
 	}
 	log.Info("resp ", resp)
@@ -104,7 +105,8 @@ func (cc *CardsController) GetCardProperties(w http.ResponseWriter, r *http.Requ
 		Hp:       prop.Hp,
 		Accuracy: prop.Accuracy,
 		Level:    prop.Level,
-		Strength: prop.Strength,
+		Deffence: prop.Deffence,
+		Damage:   prop.Damage,
 		UserID:   owner.ToString(),
 	}
 	w.WriteHeader(http.StatusOK)

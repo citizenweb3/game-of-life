@@ -25,6 +25,9 @@ func GetRandomNumberInt64(until int64) int64 {
 }
 
 func GetRandomNumberUint64(until uint64) uint64 {
+	if until == 0 {
+		return 0
+	}
 	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(until)))
 	if err != nil {
 		return 0

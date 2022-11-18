@@ -11,7 +11,7 @@ Example of game on golang.
 
 send query to localhost:8000/
 or
-visit localhost:8000/ui/user and use ui.
+visit localhost:8000/ui/system and use ui.
 To quick start use GenerateRandomSystem.
 ps. result of battle and process you could find in console
 

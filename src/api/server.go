@@ -25,10 +25,12 @@ func InitializeRoutes(
 	router.HandleFunc("/generate", automat.CreateSystem).Methods("POST")
 
 	// System
+	router.HandleFunc("/system/user", systemController.GetUserInfo).Methods("GET")
 	router.HandleFunc("/system/user/list", systemController.GetUserList).Methods("GET")
 	router.HandleFunc("/system/user/add", systemController.GenerateUser).Methods("POST")
 	router.HandleFunc("/system/user/param", systemController.AddUserParam).Methods("POST")
-	router.HandleFunc("/system/user", systemController.GetUserInfo).Methods("GET")
+	router.HandleFunc("/system/user/lockhydrogen", systemController.LockHydrogen).Methods("POST")
+
 	router.HandleFunc("/system/gotothefuture", systemController.MoveForward).Methods("POST")
 
 	// Cards

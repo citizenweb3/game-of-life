@@ -9,6 +9,23 @@ import (
 
 var MIXED_ADD = uint64(5)
 
+const (
+	HP_RANGE = uint64(100)
+	HP_MIN   = uint64(100)
+
+	ACCURACY_RANGE = uint64(20)
+	ACCURACY_MIN   = uint64(10)
+
+	LEVEL_RANGE = uint64(5)
+	LEVEL_MIN   = uint64(0)
+
+	DAMAGE_RANGE = uint64(30)
+	DAMAGE_MIN   = uint64(20)
+
+	DEFFENCE_RANGE = uint64(20)
+	DEFFENCE_MIN   = uint64(0)
+)
+
 // AddAvatar(cardId utils.CardID, url string, executor utils.UserID) error
 type CardsI interface {
 	Transfer(cardId utils.CardID, executor, to utils.UserID) error
@@ -28,11 +45,22 @@ type CardsI interface {
 }
 
 type CardParams struct {
-	Hp       uint64
-	Level    uint8
-	Strength uint64 // атака
-	Accuracy uint64 // точность
-	// deffence количество залоченых гидрогенов
+	Hp    uint64 // Kw
+	Level uint64 // CyberLinks
+
+	Deffence uint64 // locked hydrogen
+
+	Damage   uint64 // Ampers
+	Accuracy uint64 // Volts
+
+}
+
+func (cp *CardParams) ByUserParam(up system.UsersParam) {
+	cp.Hp = up.GetKw()
+	cp.Level = up.GetCountCyberlinks()
+	cp.Deffence = up.GetLockedHydrogen()
+	cp.Damage = up.GetAmperes()
+	cp.Accuracy = up.GetVolts()
 }
 
 type Card struct {
@@ -63,6 +91,7 @@ func NewCards(system system.SystemI, freezeTime uint32) *Cards {
 		freezeTime:   int64(freezeTime),
 	}
 }
+
 func (c *Cards) GetFreezeTime(cardId utils.CardID) int64 {
 	timeFreeze, ok := c.freezedUntil[cardId.ToString()]
 	if ok {
@@ -78,6 +107,7 @@ func (c *Cards) GetFreezeTime(cardId utils.CardID) int64 {
 	}
 	return timeFreeze
 }
+
 func (c *Cards) GetCardOwner(cardId utils.CardID) (utils.UserID, error) {
 	card, exist := c.cardOwner[cardId]
 	if !exist {
@@ -111,9 +141,13 @@ func (c *Cards) GetCardProperties(cardId utils.CardID) (CardParams, error) {
 func (c *Cards) MintNewCard(executor utils.UserID) (utils.CardID, error) {
 	var cp CardParams
 	var exist bool
+	var err error
 	var hash utils.CardID
 	for i := 0; i < 5; i++ {
-		cp = generarateRandomCardParams()
+		cp, err = c.GenerarateRandomCardParams(executor)
+		if err != nil {
+			continue
+		}
 		hash = utils.CardID(utils.Hash(cp))
 		_, exist = c.cards[hash]
 		if !exist {
@@ -142,12 +176,33 @@ func (c *Cards) addCard(card Card, owner utils.UserID) {
 		c.ownerCards[owner] = []utils.CardID{card.Id}
 	}
 }
+func (c *Cards) GenerarateRandomCardParams(userID utils.UserID) (CardParams, error) {
+	userParam, err := c.system.GetUserParam(userID)
+	var cardParam CardParams
+	if err != nil {
+		return cardParam, err
+	}
+	cardParam = generarateRandomCardParamsWithLevel(1 + utils.GetRandomNumberUint64(userParam.GetCountCyberlinks()/100))
 
+	return cardParam, nil
+}
+
+func generarateRandomCardParamsWithLevel(level uint64) CardParams {
+	return CardParams{
+		Hp:    (utils.GetRandomNumberUint64(HP_RANGE) + HP_MIN) * level,
+		Level: level,
+
+		Deffence: (utils.GetRandomNumberUint64(DEFFENCE_RANGE) + DEFFENCE_MIN) * level,
+
+		Damage:   (utils.GetRandomNumberUint64(DAMAGE_RANGE) + DAMAGE_MIN) * level,
+		Accuracy: (utils.GetRandomNumberUint64(ACCURACY_RANGE) + ACCURACY_MIN) * level,
+	}
+
+}
 func generarateRandomCardParams() CardParams {
 	return CardParams{
 		Hp:       utils.GetRandomNumberUint64(100),
-		Level:    uint8(utils.GetRandomNumberUint64(5)),
-		Strength: utils.GetRandomNumberUint64(10),
+		Level:    utils.GetRandomNumberUint64(5),
 		Accuracy: utils.GetRandomNumberUint64(100),
 	}
 }
@@ -292,7 +347,8 @@ func (c *Cards) mixedCards(cardId1, cardId2 utils.CardID) (res Card) {
 	} else {
 		res.Params.Level = cardParam2.Level
 	}
-	res.Params.Strength = getRandBeetweenUint64(cardParam1.Strength, cardParam2.Strength)
+	res.Params.Damage = getRandBeetweenUint64(cardParam1.Damage, cardParam2.Damage)
+	res.Params.Deffence = getRandBeetweenUint64(cardParam1.Deffence, cardParam2.Deffence)
 	res.Id = utils.CardID(utils.Hash(res.Params))
 	return
 }

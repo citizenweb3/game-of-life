@@ -15,8 +15,9 @@ func generateDummyCard(id string, num int) Card {
 		Id: utils.CardID(id),
 		Params: CardParams{
 			Hp:       uint64(100 + num),
-			Level:    uint8(200 + num),
-			Strength: uint64(300 + num),
+			Level:    uint64(200 + num),
+			Deffence: uint64(300 + num),
+			Damage:   uint64(300 + num),
 			Accuracy: uint64(400 + num),
 		},
 	}
@@ -247,8 +248,11 @@ func TestCards_mixedCards(t *testing.T) {
 	assert.LessOrEqual(t, card1.Params.Accuracy, card.Params.Accuracy)
 	assert.LessOrEqual(t, card.Params.Accuracy, card2.Params.Accuracy+MIXED_ADD)
 
-	assert.LessOrEqual(t, card1.Params.Strength, card.Params.Strength)
-	assert.LessOrEqual(t, card.Params.Strength, card2.Params.Strength+MIXED_ADD)
+	assert.LessOrEqual(t, card1.Params.Damage, card.Params.Damage)
+	assert.LessOrEqual(t, card.Params.Damage, card2.Params.Damage+MIXED_ADD)
+
+	assert.LessOrEqual(t, card1.Params.Deffence, card.Params.Deffence)
+	assert.LessOrEqual(t, card.Params.Deffence, card2.Params.Deffence+MIXED_ADD)
 
 	assert.Equal(t, card2.Params.Level, card.Params.Level)
 }

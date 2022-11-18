@@ -50,27 +50,12 @@ func (b *Battle) IsOpenToBattel(user utils.UserID) bool {
 	return open
 }
 
-func (b *Battle) modifyCard(cardParam, userParam *CardParams, limit *system.UsersParam) {
-
-	if limit.Kw >= userParam.Hp {
-		limit.Kw -= userParam.Hp
-		cardParam.Hp += userParam.Hp
-	}
-
-	if limit.Volts >= userParam.Strength {
-		limit.Volts -= userParam.Strength
-		cardParam.Strength += userParam.Strength
-	}
-
-	if limit.Amperes >= userParam.Accuracy {
-		limit.Amperes -= userParam.Accuracy
-		cardParam.Accuracy += userParam.Accuracy
-	}
-
-	if limit.Cyberlinks >= uint64(userParam.Level) {
-		limit.Cyberlinks -= uint64(userParam.Level)
-		cardParam.Level += userParam.Level
-	}
+func (b *Battle) modifyCard(cardParam *CardParams, userInfluene Influence, userParam CardParams) {
+	cardParam.Hp += uint64(float64(userParam.Hp) * userInfluene.Hp)
+	// cardParam.Level
+	cardParam.Damage += uint64(float64(userParam.Damage) * userInfluene.Damage)
+	cardParam.Deffence += uint64(float64(userParam.Deffence) * userInfluene.Deffence)
+	cardParam.Accuracy += uint64(float64(userParam.Accuracy) * userInfluene.Accuracy)
 }
 
 func (b *Battle) ModifyCards(owner utils.UserID, cards []CardWithUserInfluence) ([]CardParams, error) {
@@ -79,20 +64,15 @@ func (b *Battle) ModifyCards(owner utils.UserID, cards []CardWithUserInfluence) 
 	if err != nil {
 		return nil, err
 	}
+	userCardParam := CardParams{}
+	userCardParam.ByUserParam(userParam)
 
 	for num, card := range cards {
-		if b.cardContract.IsOwner(card.cardID, owner) != nil {
-			continue
-		}
-		if b.cardContract.IsFreezed(card.cardID) {
-			continue
-		}
-
-		cardParam, err := b.cardContract.GetCardProperties(card.cardID)
+		cardParam, err := b.cardContract.GetCardProperties(card.CardID)
 		if err != nil {
 			continue
 		}
-		b.modifyCard(&cardParam, &card.userAttributes, &userParam)
+		b.modifyCard(&cardParam, card.UserAttributes, userCardParam)
 		res[num] = cardParam
 	}
 	return res, nil
@@ -129,12 +109,16 @@ func (b *Battle) Battle(executor, rival utils.UserID) (int, error) {
 
 }
 
-func randDammage(strength, accuracy uint64) uint64 {
-	dammage := utils.GetRandomNumberUint64(accuracy)
-	if strength > dammage {
+func randDammage(deffence, damage, accuracy uint64) uint64 {
+	if accuracy < damage {
+		diff := damage - accuracy
+		damage = damage + utils.GetRandomNumberUint64(diff) + accuracy
+	}
+
+	if deffence > damage {
 		return 0
 	}
-	return dammage - strength
+	return damage - deffence
 }
 
 func (b *Battle) battleStep(cardSet1, cardSet2 []CardParams) bool {
@@ -154,7 +138,7 @@ func (b *Battle) battleStep(cardSet1, cardSet2 []CardParams) bool {
 
 		sumAttack := uint64(0)
 		for _, numCardSet1 := range listCardAttack {
-			sumAttack += randDammage(cardSet2[numInSet].Strength, cardSet1[numCardSet1].Accuracy)
+			sumAttack += randDammage(cardSet2[numInSet].Deffence, cardSet1[numInSet].Damage, cardSet1[numCardSet1].Accuracy)
 		}
 		if cardSet2[numInSet].Hp < sumAttack {
 			cardSet2[numInSet].Hp = 0
@@ -178,26 +162,4 @@ func (b *Battle) battleStepByStep(cardSet1, cardSet2 []CardParams, maxStep int) 
 		fmt.Println("Step ", i, " after rival hit executor cardSet1=", cardSet1, " cardSet2=", cardSet2)
 	}
 	return 0
-}
-
-func (b *Battle) battle(cardSet1, cardSet2 []CardParams) bool {
-	sumCardsParam1 := CardParams{}
-	sumCardsParam2 := CardParams{}
-	for _, card := range cardSet1 {
-		sumCardsParam1.Hp += card.Hp
-		sumCardsParam1.Accuracy += card.Accuracy
-		sumCardsParam1.Level += card.Level
-		sumCardsParam1.Strength += card.Strength
-	}
-	for _, card := range cardSet1 {
-		sumCardsParam2.Hp += card.Hp
-		sumCardsParam2.Accuracy += card.Accuracy
-		sumCardsParam2.Level += card.Level
-		sumCardsParam2.Strength += card.Strength
-	}
-
-	steps1 := float64(sumCardsParam1.Hp) / float64(sumCardsParam2.Accuracy-sumCardsParam1.Strength)
-	steps2 := float64(sumCardsParam2.Hp) / float64(sumCardsParam1.Accuracy-sumCardsParam2.Strength)
-
-	return steps1 > steps2
 }

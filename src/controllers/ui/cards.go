@@ -19,7 +19,7 @@ var cardsPage = `<html>
 
 <div>
 	<div float="left" width="50%">
-		<div class="vertical-menu">
+		<div class="horisontal-menu">
 			{{range .usersId}}
 				<a href="cards?user_id={{.UserId}}">{{.UserId}}</a>
 			{{end}}
@@ -29,19 +29,19 @@ var cardsPage = `<html>
 		<button onclick="mintNewCard()">Mint card</button> 
 
 		<div>
+			<button onclick="transferCard()">transfer</button> 
 			CardId <input type="text" id = "card_id" placeholder ="card_id">
 			Receiver <input type="text" id = "receiver" placeholder ="receiver">
-			<button onclick="transferCard()">transfer</button> 
 		</div>
 
 		<div>
+			<button onclick="freezeCard()">Freeze</button> 
 			CardId <input type="text" id="card_id_freeze1" placeholder ="card_id1">
 			CardId <input type="text" id="card_id_freeze2" placeholder ="card_id2">
-			<button onclick="freezeCard()">Freeze</button> 
 		</div>
-		<div>
-			CardId <input type="text" id="card_id_unfreeze" placeholder ="card_id">
+		<div>			
 			<button onclick="unfreezeCard()">UnFreeze</button> 
+			CardId <input type="text" id="card_id_unfreeze" placeholder ="card_id">
 		</div>
 
 		<div id="cards">
@@ -50,18 +50,19 @@ var cardsPage = `<html>
 					<td>CardId</td>
 					<td>Hp</td>
 					<td>Level</td>
-					<td>Strength</td>
-					<td>Accuracy</td>
+					<td>Deffence</td>
+					<td>Expected Damage<br>(Accuracy-Damage)</td>
 					<td>Freeze</td>
 					<td>Burn</td>
 				</tr>
 			{{range .card_info}}
 				<tr>
-					<td>{{.CardId}}</td>
+					<td>{{.CardIdShort}}</td>
 					<td>{{.Hp}}</td>
 					<td>{{.Level}}</td>
-					<td>{{.Strength}}</td>
-					<td>{{.Accuracy}}</td>
+					<td>{{.Deffence}}</td>
+					<td>{{.Accuracy}} - {{.Damage}}</td>
+					<td></td>
 					<td>{{.Freeze}}</td>
 					<td><button onclick="burnCard('{{.CardId}}')">burn</button></td>
 				</tr>
@@ -114,12 +115,14 @@ var cardsPage = `<html>
 </body></html>`
 
 type CardsInfoUI struct {
-	CardId   string
-	Hp       string
-	Level    string
-	Strength string
-	Accuracy string
-	Freeze   string
+	CardId      string
+	CardIdShort string
+	Hp          string
+	Level       string
+	Deffence    string
+	Damage      string
+	Accuracy    string
+	Freeze      string
 }
 
 func (ui *UI) GetCardsPage(w http.ResponseWriter, r *http.Request) {
@@ -141,14 +144,16 @@ func (ui *UI) GetCardsPage(w http.ResponseWriter, r *http.Request) {
 		if freezeTime != 0 {
 			freezeTimeStr = fmt.Sprint(freezeTime, "(after ", currTime-freezeTime, ")")
 		}
-
+		cardIdStr := card.Id.ToString()
 		userInfos = append(userInfos, CardsInfoUI{
-			CardId:   card.Id.ToString(),
-			Hp:       fmt.Sprint(card.Params.Hp),
-			Level:    fmt.Sprint(card.Params.Level),
-			Accuracy: fmt.Sprint(card.Params.Accuracy),
-			Strength: fmt.Sprint(card.Params.Strength),
-			Freeze:   freezeTimeStr,
+			CardId:      cardIdStr,
+			CardIdShort: fmt.Sprintf("%s...%s", cardIdStr[:4], cardIdStr[len(cardIdStr)-4:]),
+			Hp:          fmt.Sprint(card.Params.Hp),
+			Level:       fmt.Sprint(card.Params.Level),
+			Deffence:    fmt.Sprint(card.Params.Deffence),
+			Accuracy:    fmt.Sprint(card.Params.Accuracy),
+			Damage:      fmt.Sprint(card.Params.Damage),
+			Freeze:      freezeTimeStr,
 		})
 	}
 	data := map[string]interface{}{"card_info": userInfos, "UserId": userId, "usersId": userIds}

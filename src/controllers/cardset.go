@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"gameoflife/contracts"
 	"gameoflife/utils"
 	"net/http"
@@ -58,7 +59,8 @@ func (csc *CardSetController) GetActualSet(w http.ResponseWriter, r *http.Reques
 			Owner:    string(owner),
 			Hp:       prop.Hp,
 			Level:    prop.Level,
-			Strength: prop.Strength,
+			Deffence: prop.Deffence,
+			Damage:   prop.Damage,
 			Accuracy: prop.Accuracy,
 		})
 	}
@@ -72,9 +74,7 @@ func (csc *CardSetController) AddCardToSet(w http.ResponseWriter, r *http.Reques
 	var p AddCardToSetRequest
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Header().Set("content-type", "application/json")
-		json.NewEncoder(w).Encode("error in decode:" + err.Error())
+		responseWithErrorDecode(w, err)
 		return
 	}
 
@@ -88,9 +88,7 @@ func (csc *CardSetController) AddCardToSet(w http.ResponseWriter, r *http.Reques
 	err = csc.cardSetContract.AddCardToSet(utils.UserID(p.Executor), p.NumInSet, utils.CardID(p.CardID))
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set("content-type", "application/json")
-		json.NewEncoder(w).Encode("error :" + err.Error())
+		responseWithError(w, err)
 		return
 	}
 
@@ -103,9 +101,7 @@ func (csc *CardSetController) RemoveCardFromSet(w http.ResponseWriter, r *http.R
 	var p RemoveCardToSetRequest
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Header().Set("content-type", "application/json")
-		json.NewEncoder(w).Encode("error in decode:" + err.Error())
+		responseWithErrorDecode(w, err)
 		return
 	}
 
@@ -119,9 +115,7 @@ func (csc *CardSetController) RemoveCardFromSet(w http.ResponseWriter, r *http.R
 	err = csc.cardSetContract.RemoveCardFromSet(utils.UserID(p.Executor), utils.CardID(p.CardID))
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set("content-type", "application/json")
-		json.NewEncoder(w).Encode("error :" + err.Error())
+		responseWithError(w, err)
 		return
 	}
 
@@ -134,9 +128,7 @@ func (csc *CardSetController) ChangeCardFromSet(w http.ResponseWriter, r *http.R
 	var p ChangeCardFromSetRequest
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Header().Set("content-type", "application/json")
-		json.NewEncoder(w).Encode("error in decode:" + err.Error())
+		responseWithErrorDecode(w, err)
 		return
 	}
 
@@ -150,9 +142,7 @@ func (csc *CardSetController) ChangeCardFromSet(w http.ResponseWriter, r *http.R
 	err = csc.cardSetContract.ChangeCardFromSet(utils.UserID(p.Executor), utils.CardID(p.CardIDLast), utils.CardID(p.CardIDNew))
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set("content-type", "application/json")
-		json.NewEncoder(w).Encode("error :" + err.Error())
+		responseWithError(w, err)
 		return
 	}
 
@@ -163,29 +153,29 @@ func (csc *CardSetController) ChangeCardFromSet(w http.ResponseWriter, r *http.R
 
 func (csc *CardSetController) SetUserAttribute(w http.ResponseWriter, r *http.Request) {
 
+	fmt.Println("SetUserAttribute")
 	var p SetUserAttributeRequest
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Header().Set("content-type", "application/json")
-		json.NewEncoder(w).Encode("error in decode:" + err.Error())
+		responseWithErrorDecode(w, err)
 		return
 	}
+	fmt.Println("SetUserAttribute", p)
 
 	err = csc.cardSetContract.SetUserAttribute(utils.UserID(p.Executor), uint8(p.NumInSet),
-		contracts.CardParams{
+		contracts.Influence{
 			Hp:       p.Hp,
-			Level:    p.Level,
-			Strength: p.Strength,
+			Deffence: p.Deffence,
+			Damage:   p.Damage,
 			Accuracy: p.Accuracy,
 		})
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set("content-type", "application/json")
-		json.NewEncoder(w).Encode("error :" + err.Error())
+		responseWithError(w, err)
 		return
 	}
+
+	fmt.Println("SetUserAttribute Done")
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")

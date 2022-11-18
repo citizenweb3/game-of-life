@@ -5,9 +5,33 @@ import (
 	"gameoflife/utils"
 )
 
+type Influence struct {
+	Hp       float64
+	Level    float64
+	Deffence float64
+	Damage   float64
+	Accuracy float64
+}
+
+func (i *Influence) Add(b Influence) {
+	i.Hp += b.Hp
+	i.Level += b.Level
+	i.Deffence += b.Deffence
+	i.Damage += b.Damage
+	i.Accuracy += b.Accuracy
+}
+
+func (i *Influence) Check() bool {
+	return i.Hp <= float64(100) &&
+		i.Level <= float64(100) &&
+		i.Deffence <= float64(100) &&
+		i.Damage <= float64(100) &&
+		i.Accuracy <= float64(100)
+}
+
 type CardWithUserInfluence struct {
-	cardID         utils.CardID
-	userAttributes CardParams
+	CardID         utils.CardID
+	UserAttributes Influence
 }
 
 type CardSetI interface {
@@ -16,8 +40,8 @@ type CardSetI interface {
 	RemoveCardFromSet(executor utils.UserID, cardId utils.CardID) error
 	ChangeCardFromSet(executor utils.UserID, cardIdLast, cardIdNew utils.CardID) error
 
-	SetUserAttribute(executor utils.UserID, numInSet uint8, value CardParams) error
-	GetUserAttributes(user utils.UserID) []CardParams
+	SetUserAttribute(executor utils.UserID, numInSet uint8, value Influence) error
+	GetUserAttributes(user utils.UserID) []Influence
 
 	GetActualSetWithAttribute(user utils.UserID) []CardWithUserInfluence
 }
@@ -27,7 +51,7 @@ type CardSet struct {
 	countCardInSet uint8
 	cardSet        map[utils.UserID][]utils.CardID
 
-	personalAttributes map[utils.UserID][]CardParams
+	personalAttributes map[utils.UserID][]Influence
 }
 
 func NewCardSet(cardsContract CardsI, countCardInSet uint8) *CardSet {
@@ -35,7 +59,7 @@ func NewCardSet(cardsContract CardsI, countCardInSet uint8) *CardSet {
 		cardsContract:      cardsContract,
 		countCardInSet:     countCardInSet,
 		cardSet:            map[utils.UserID][]utils.CardID{},
-		personalAttributes: map[utils.UserID][]CardParams{},
+		personalAttributes: map[utils.UserID][]Influence{},
 	}
 }
 
@@ -121,14 +145,22 @@ func (cs *CardSet) GetActualSet(user utils.UserID) []utils.CardID {
 }
 
 ///// Attributes
-func (cs *CardSet) SetUserAttribute(executor utils.UserID, numInSet uint8, value CardParams) error {
+func (cs *CardSet) SetUserAttribute(executor utils.UserID, numInSet uint8, value Influence) error {
 	if numInSet > cs.countCardInSet {
 		return utils.ErrOutOfSetRange
 	}
 
 	_, ok := cs.personalAttributes[executor]
 	if !ok {
-		cs.personalAttributes[executor] = make([]CardParams, int(cs.countCardInSet))
+		cs.personalAttributes[executor] = make([]Influence, int(cs.countCardInSet))
+	} else {
+		total := value
+		for _, attr := range cs.personalAttributes[executor] {
+			total.Add(attr)
+			if !total.Check() {
+				return utils.ErrSetTooMuchCards
+			}
+		}
 	}
 
 	cs.personalAttributes[executor][numInSet] = value
@@ -136,24 +168,34 @@ func (cs *CardSet) SetUserAttribute(executor utils.UserID, numInSet uint8, value
 	return nil
 }
 
-func (cs *CardSet) GetUserAttributes(user utils.UserID) []CardParams {
+func (cs *CardSet) GetUserAttributes(user utils.UserID) []Influence {
 	return cs.personalAttributes[user]
 }
 
 func (cs *CardSet) GetActualSetWithAttribute(user utils.UserID) []CardWithUserInfluence {
 	cardIDs := cs.GetActualSet(user)
-	res := make([]CardWithUserInfluence, len(cardIDs))
+	res := make([]CardWithUserInfluence, cs.countCardInSet)
 
-	attributes := cs.GetUserAttributes(user)
-	for num, cardID := range cardIDs {
-		res[num].cardID = cardID
-	}
-
-	if len(attributes) == 0 {
+	if len(cardIDs) == 0 {
 		return res
 	}
-	for num := range cardIDs {
-		res[num].userAttributes = attributes[num]
+
+	for num, cardID := range cardIDs {
+		err := cs.cardsContract.IsOwner(cardID, user)
+		if err != nil {
+			continue
+		}
+		if cs.cardsContract.IsFreezed(cardID) {
+			continue
+		}
+		res[num] = CardWithUserInfluence{
+			CardID: cardID,
+		}
+
+	}
+
+	for num, attributes := range cs.GetUserAttributes(user) {
+		res[num].UserAttributes = attributes
 	}
 	return res
 }

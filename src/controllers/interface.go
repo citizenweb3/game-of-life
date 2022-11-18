@@ -22,8 +22,9 @@ type GetActualSetResponseElement struct {
 	CardID   string
 	Owner    string
 	Hp       uint64
-	Level    uint8
-	Strength uint64
+	Level    uint64
+	Deffence uint64
+	Damage   uint64
 	Accuracy uint64
 }
 
@@ -47,10 +48,10 @@ type ChangeCardFromSetRequest struct {
 type SetUserAttributeRequest struct {
 	Executor string
 	NumInSet uint8
-	Hp       uint64
-	Level    uint8
-	Strength uint64
-	Accuracy uint64
+	Hp       float64
+	Deffence float64
+	Damage   float64
+	Accuracy float64
 }
 
 //card
@@ -79,8 +80,9 @@ type MintNewCardResponse struct {
 	CardId   string
 	UserID   string
 	Hp       uint64
-	Level    uint8
-	Strength uint64
+	Level    uint64
+	Deffence uint64
+	Damage   uint64
 	Accuracy uint64
 }
 
@@ -88,8 +90,9 @@ type GetCardPropertiesResponce struct {
 	CardId   string
 	UserID   string
 	Hp       uint64
-	Level    uint8
-	Strength uint64
+	Level    uint64
+	Deffence uint64
+	Damage   uint64
 	Accuracy uint64
 }
 
@@ -109,7 +112,14 @@ type AddUserParamRequest struct {
 	Amperes    int64
 	Cyberlinks int64
 	Kw         int64
+	Hydrogen   int64
 }
+
+type LockHydrogenRequest struct {
+	UserID string
+	Count  uint64
+}
+
 type UserInfoApi struct {
 	UserID     string
 	Volts      uint64

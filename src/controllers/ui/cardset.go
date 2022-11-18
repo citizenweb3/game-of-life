@@ -2,6 +2,7 @@ package userinterface
 
 import (
 	"fmt"
+	"gameoflife/contracts"
 	"gameoflife/utils"
 	"html/template"
 	"log"
@@ -18,7 +19,7 @@ var cardSetPage = `<html><body>
 {{block "batch" .}}
 <div>
 	<div float="left" width="50%">
-		<div class="vertical-menu">
+		<div class="horisontal-menu">
 		{{range .usersId}}
 			<a href="cardsset?user_id={{.UserId}}">{{.UserId}}</a>
 		{{end}}
@@ -38,19 +39,19 @@ var cardSetPage = `<html><body>
 			<td>CardId</td>
 			<td>Hp</td>
 			<td>Level</td>
-			<td>Strength</td>
-			<td>Accuracy</td>
+			<td>Deffence</td>
+			<td>Damage</td>
 			<td>Remove</td>
 			<td>Change</td>
 			<td>Add</td>
 		</tr>
 		{{range .cards}}
 			<tr>
-				<td>{{.CardId}}</td>
+				<td>{{.CardIdShort}}</td>
 				<td>{{.Hp}}</td>
 				<td>{{.Level}}</td>
-				<td>{{.Strength}}</td>
-				<td>{{.Accuracy}}</td>
+				<td>{{.Deffence}}</td>
+				<td>{{.Accuracy}} - {{.Damage}}</td>
 				<td><button onclick="removeCardFromSet({{.UserId}}, {{.CardId}})">remove</button></td>
 				<td><button onclick="changeCardFromSet({{.UserId}}, {{.CardId}})">Change</button></td>
 				<td><button onclick="addCardToSet({{.UserId}}, {{.NumInSet}})">Add card to set</button> </td>
@@ -58,8 +59,32 @@ var cardSetPage = `<html><body>
 		{{end}}
 		</table>
 	</div>
+	<h3>Influence:</h3>
+	Set persent of user value to influence cardParam (0-100% of user value) <br>
+	Num in set <input type="number" id="numInSet" name="numInSet" value=0 width="20px"><br>
+	Hp <input type="number" id="hp" name="hp" value=0 width="20px"><br>
+	Deffence <input type="number" id="def" name="def" value=0 width="20px"><br>
+	Damage <input type="number" id="dam" name="dam" value=0 width="20px"><br>
+	Accuracy <input type="number" id="acc" name="acc" value=0 width="20px"><br>
+	
+	<button onclick="addInfluence({{.userId}})">add influence</button>
 {{end}}
 <script>
+
+function addInfluence(userId) {
+	var numInSet = parseInt(document.getElementById('numInSet').value);
+	var hp = parseInt(document.getElementById('hp').value);
+	var def = parseInt(document.getElementById('def').value);
+	var dam = parseInt(document.getElementById('dam').value);
+	var acc = parseInt(document.getElementById('acc').value);
+
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", "/set/attribute", true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	var jsonVar = {"Executor": userId, "NumInSet": numInSet, "Hp": hp, "Deffence": def,  "Damage": dam,  "Accuracy": acc}
+	try { xhr.send(JSON.stringify(jsonVar));} catch (err) { console.log(err) }
+	document.location.reload(true)
+}
 
 function addCardToSet(userId, numInSet) {
 	var cardId = document.getElementById('card_id').value
@@ -92,13 +117,15 @@ type CardSetUsersSetsUI struct {
 	Cards  []CardSetCardInfoUI
 }
 type CardSetCardInfoUI struct {
-	UserId   string
-	CardId   string
-	Hp       string
-	Level    string
-	Strength string
-	Accuracy string
-	NumInSet int
+	UserId      string
+	CardId      string
+	CardIdShort string
+	Hp          string
+	Level       string
+	Deffence    string
+	Damage      string
+	Accuracy    string
+	NumInSet    int
 }
 type UserIDUI struct {
 	UserId string
@@ -126,16 +153,29 @@ func (ui *UI) GetCardSetPage(w http.ResponseWriter, r *http.Request) {
 
 	var cardsSet []CardSetCardInfoUI
 	act := ui.cardSet.GetActualSet(utils.UserID(userId))
+
+	influenses := ui.cardSet.GetActualSetWithAttribute(utils.UserID(userId))
 	for num, cardId := range act {
+		infl := contracts.CardWithUserInfluence{}
+		if len(influenses) > num {
+			infl = influenses[num]
+		}
 		prop, _ := ui.cards.GetCardProperties(cardId)
+		cardIdStr := cardId.ToString()
+		cardIdShortStr := ""
+		if len(cardIdStr) != 0 {
+			cardIdShortStr = fmt.Sprintf("%s...%s,", cardIdStr[:4], cardIdStr[len(cardIdStr)-4:])
+		}
 		cardsSet = append(cardsSet, CardSetCardInfoUI{
-			UserId:   userId,
-			CardId:   cardId.ToString(),
-			Hp:       fmt.Sprint(prop.Hp),
-			Accuracy: fmt.Sprint(prop.Accuracy),
-			Strength: fmt.Sprint(prop.Strength),
-			Level:    fmt.Sprint(prop.Level),
-			NumInSet: num,
+			UserId:      userId,
+			CardId:      cardIdStr,
+			CardIdShort: cardIdShortStr,
+			Hp:          fmt.Sprintf("%d (+%% %.1f)", prop.Hp, infl.UserAttributes.Hp),
+			Accuracy:    fmt.Sprintf("%d (+%% %.1f)", prop.Accuracy, infl.UserAttributes.Accuracy),
+			Deffence:    fmt.Sprintf("%d (+%% %.1f)", prop.Deffence, infl.UserAttributes.Deffence),
+			Damage:      fmt.Sprintf("%d (+%% %.1f)", prop.Damage, infl.UserAttributes.Damage),
+			Level:       fmt.Sprint(prop.Level),
+			NumInSet:    num,
 		})
 	}
 	data := map[string]interface{}{"userId": userId, "cards": cardsSet, "usersId": userIds, "cardIds": userCardIds}

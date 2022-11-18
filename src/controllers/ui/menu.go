@@ -11,7 +11,7 @@ type MenuInfo struct {
 func GetMenu(actualLink string) string {
 	var menuInfo = []MenuInfo{
 		{Link: "system", Text: "System", IsActive: "system" == actualLink},
-		{Link: "users", Text: "Users", IsActive: "users" == actualLink},
+		// {Link: "users", Text: "Users", IsActive: "users" == actualLink},
 		{Link: "cards", Text: "Cards", IsActive: "cards" == actualLink},
 		{Link: "cardsset", Text: "Cards set", IsActive: "cardsset" == actualLink},
 		{Link: "battle", Text: "Battle", IsActive: "battle" == actualLink},
@@ -20,7 +20,7 @@ func GetMenu(actualLink string) string {
 }
 
 func getMenu(links []MenuInfo) string {
-	menu := `<div class="vertical-menu">`
+	menu := `<div class="horisontal-menu">`
 	for _, menuInfo := range links {
 		currentStyle := ""
 		if menuInfo.IsActive {

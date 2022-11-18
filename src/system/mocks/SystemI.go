@@ -17,6 +17,20 @@ type SystemI struct {
 	mock.Mock
 }
 
+// AddUserParam provides a mock function with given fields: userId, amperes, volts, cyberlinks, kw, hydrogen
+func (_m *SystemI) AddUserParam(userId utils.UserID, amperes int64, volts int64, cyberlinks int64, kw int64, hydrogen int64) error {
+	ret := _m.Called(userId, amperes, volts, cyberlinks, kw, hydrogen)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(utils.UserID, int64, int64, int64, int64, int64) error); ok {
+		r0 = rf(userId, amperes, volts, cyberlinks, kw, hydrogen)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // CreateUserWithRamdomParam provides a mock function with given fields: user
 func (_m *SystemI) CreateUserWithRamdomParam(user utils.UserID) error {
 	ret := _m.Called(user)

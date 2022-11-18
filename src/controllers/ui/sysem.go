@@ -26,10 +26,12 @@ var systemPage = `<html>
 			<div>
 				<b><a href="cards?user_id={{.UserId}}"> {{.UserId}} </a></b> <br>
 				<table>
-				<tr><td>Volts     </td><td>{{.Volts}}     </td><td><button onclick='addParam({{.UserId}}, "Volts")'>Add</button></td></tr>
-				<tr><td>Amperes   </td><td>{{.Amperes}}   </td><td><button onclick='addParam({{.UserId}}, "Amperes")'>Add</button></td></tr>
-				<tr><td>Cyberlinks</td><td>{{.Cyberlinks}}</td><td><button onclick='addParam({{.UserId}}, "Cyberlinks")'>Add</button></td></tr>
-				<tr><td>Kw        </td><td>{{.Kw}}        </td><td><button onclick='addParam({{.UserId}}, "Kw")'>Add</button></td></tr>
+				<tr><td>Volts         </td><td>{{.Volts}}     </td><td><button onclick='addParam({{.UserId}}, "Volts")'>Add</button></td></tr>
+				<tr><td>Amperes       </td><td>{{.Amperes}}   </td><td><button onclick='addParam({{.UserId}}, "Amperes")'>Add</button></td></tr>
+				<tr><td>Cyberlinks    </td><td>{{.Cyberlinks}}</td><td><button onclick='addParam({{.UserId}}, "Cyberlinks")'>Add</button></td></tr>
+				<tr><td>Kw            </td><td>{{.Kw}}        </td><td><button onclick='addParam({{.UserId}}, "Kw")'>Add</button></td></tr>
+				<tr><td>Hydrogen      </td><td>{{.Hydrogen}}  </td><td><button onclick='addParam({{.UserId}}, "Hydrogen")'>Add</button></td></tr>
+				<tr><td>LockedHydrogen</td><td>{{.LockedHydrogen}}        </td><td><button onclick='lockHydrogen({{.UserId}})'>Lock</button></td></tr>
 				</table>
 			</div>
 		{{end}}
@@ -57,21 +59,37 @@ var systemPage = `<html>
 		var amper = 0;
 		var cyberlink = 0;
 		var kw = 0;
+		var hydrogen = 0;
+		var count = parseInt(document.getElementById('addvalue').value);
 
 		if (typeValueAdd == "Amperes" ){
-			amper = parseInt(document.getElementById('addvalue').value)
+			amper = count
 		} else if (typeValueAdd == "Volts") {
-			volts = parseInt(document.getElementById('addvalue').value)
+			volts = count
 		} else if (typeValueAdd == "Cyberlinks") {
-			cyberlink = parseInt(document.getElementById('addvalue').value)
+			cyberlink = count
 		} else if (typeValueAdd == "Kw" ){
-			kw = parseInt(document.getElementById('addvalue').value)
+			kw = count
+		} else if (typeValueAdd == "Hydrogen" ){
+			hydrogen = count
 		}
 
-		var jsonVal = {"UserId": userId, "Volts": volts, "Amperes": amper, "Cyberlinks": cyberlink, "Kw": kw}
+		var jsonVal = {"UserId": userId, "Volts": volts, "Amperes": amper, "Cyberlinks": cyberlink, "Kw": kw, "Hydrogen": hydrogen}
 		try { xhr.send(JSON.stringify(jsonVal));} catch (err) { console.log(err) }
 		document.location.reload(true)
 	}
+	
+	function lockHydrogen(userId) {
+		var xhr = new XMLHttpRequest();
+		xhr.open("POST", "/system/user/lockhydrogen", true);
+		xhr.setRequestHeader("Content-Type", "application/json");
+		count = parseInt(document.getElementById('addvalue').value)
+
+		var jsonVal = {"UserId": userId, "Count": count}
+		try { xhr.send(JSON.stringify(jsonVal));} catch (err) { console.log(err) }
+		document.location.reload(true)
+	}
+
 	function addUser() {
 		var xhr = new XMLHttpRequest();
 		xhr.open("POST", "/system/user/add", true);
@@ -101,11 +119,13 @@ var systemPage = `<html>
 // JSON.stringify({"UserCountFrom": 10, "UserCountTo": 11, "CardCountFrom": 2, "CardCountTo": 20 })
 
 type UserInfoUI struct {
-	UserId     string
-	Volts      string
-	Amperes    string
-	Cyberlinks string
-	Kw         string
+	UserId         string
+	Volts          string
+	Amperes        string
+	Cyberlinks     string
+	Kw             string
+	Hydrogen       string
+	LockedHydrogen string
 }
 
 func (ui *UI) GetSystemPage(w http.ResponseWriter, r *http.Request) {
@@ -120,11 +140,13 @@ func (ui *UI) GetSystemPage(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		userInfos = append(userInfos, UserInfoUI{
-			UserId:     userId.ToString(),
-			Amperes:    fmt.Sprint(param.GetAmperes()),
-			Volts:      fmt.Sprint(param.GetVolts()),
-			Kw:         fmt.Sprint(param.GetKw()),
-			Cyberlinks: fmt.Sprint(param.GetCountCyberlinks()),
+			UserId:         userId.ToString(),
+			Amperes:        fmt.Sprint(param.GetAmperes()),
+			Volts:          fmt.Sprint(param.GetVolts()),
+			Kw:             fmt.Sprint(param.GetKw()),
+			Cyberlinks:     fmt.Sprint(param.GetCountCyberlinks()),
+			Hydrogen:       fmt.Sprint(param.GetHydrogen()),
+			LockedHydrogen: fmt.Sprint(param.GetLockedHydrogen()),
 		})
 	}
 	currentTime := fmt.Sprint(ui.system.GetCurrentTime())

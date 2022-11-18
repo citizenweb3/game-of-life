@@ -1,12 +1,12 @@
 package userinterface
 
 var menuStyle = `
-.vertical-menu {
+.horisontal-menu {
 	width: 100%;
   height: 100px;
 }
 
-.vertical-menu a {
+.horisontal-menu a {
 	background-color: #eee;
 	color: black;
 	display: block;
@@ -15,11 +15,11 @@ var menuStyle = `
   float: left;
 }
 
-.vertical-menu a:hover {
+.horisontal-menu a:hover {
 	background-color: #ccc;
 }
 
-.vertical-menu a.active {
+.horisontal-menu a.active {
 	background-color: #04AA6D;
 	color: white;
 }

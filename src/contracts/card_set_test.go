@@ -16,12 +16,11 @@ func TestCardSet_AddCardToSet(t *testing.T) {
 
 	cardMock := mocks.NewCardsI(t)
 	cardMock.On("IsOwner", utils.CardID("card1"), utils.UserID("user1")).Return(nil)
-	cardMock.On("IsOwner", utils.CardID("card2"), utils.UserID("user1")).Return(nil)
 	cardMock.On("IsOwner", utils.CardID("card1"), utils.UserID("user2")).Return(utils.ErrPermDenie)
 
 	t.Run("Correct", func(t *testing.T) {
 		cardSetCorrect := contracts.NewCardSet(cardMock, 2)
-		expectedSet := []utils.CardID{"card1"}
+		expectedSet := []utils.CardID{"card1", ""}
 
 		err := cardSetCorrect.AddCardToSet("user1", 0, "card1")
 
@@ -60,7 +59,7 @@ func TestCardSet_RemoveCardFromSet(t *testing.T) {
 	require.NoError(t, err, "Error in add card to set")
 
 	t.Run("Correct", func(t *testing.T) {
-		expectedSet := []utils.CardID{"card2"}
+		expectedSet := []utils.CardID{"", "card2"}
 		err := cardSet.RemoveCardFromSet("user1", "card1")
 		assert.NoError(t, err)
 		actualSet := cardSet.GetActualSet("user1")
@@ -156,9 +155,9 @@ func TestCardSet_ChangeCardFromSet(t *testing.T) {
 func TestCardSet_SetUserAttributes(t *testing.T) {
 	maxCardNum := 10
 	cs := contracts.NewCardSet(nil, uint8(maxCardNum))
-	pushedParam := contracts.CardParams{Hp: 10, Level: 11, Strength: 12, Accuracy: 13}
-	pushedParam2 := contracts.CardParams{Hp: 20, Level: 21, Strength: 22, Accuracy: 23}
-	emptyParam := contracts.CardParams{Hp: 0, Level: 0, Strength: 0, Accuracy: 0}
+	pushedParam := contracts.Influence{Hp: 10, Level: 11, Deffence: 12, Accuracy: 13, Damage: 14}
+	pushedParam2 := contracts.Influence{Hp: 20, Level: 21, Deffence: 22, Accuracy: 23, Damage: 24}
+	emptyParam := contracts.Influence{Hp: 0, Level: 0, Deffence: 0, Accuracy: 0, Damage: 0}
 
 	// push in empty set
 	err := cs.SetUserAttribute("user1", 1, pushedParam)
