@@ -1,26 +1,41 @@
 use cosmwasm_std::StdError;
+use cw721_base::ContractError as CW721ContractError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ContractError {
+
+    #[error("Disabled functionality")]
+    DisabledFunctionality{},
+
+    #[error("unique card is not created. Please try agane")]
+    CardNotCreated{},
+
     #[error("{0}")]
     Std(#[from] StdError),
 
     #[error("Unauthorized")]
     Unauthorized {},
-
-    #[error("Access Deny")]
-    AccessDeny {},
-
-    #[error("Card is not exist")]
-    CardNotExist {},
-
-    #[error("Card alrady exist")]
-    CardExist {},
-
     
-    #[error("Something wrong")]
-    UnknownErr {},
-    // Add any other custom errors you like here.
-    // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
+    #[error("token_id already claimed")]
+    Claimed {},
+
+    #[error("Cannot set approval that is already expired")]
+    Expired {},
+
+    #[error("Approval not found for: {spender}")]
+    ApprovalNotFound { spender: String },
+}
+
+
+impl From<CW721ContractError> for ContractError {
+    fn from(msg: CW721ContractError) -> ContractError {
+        match msg {
+            CW721ContractError::Std(e) => ContractError::Std(e),
+            CW721ContractError::Unauthorized {} => ContractError::Unauthorized {},
+            CW721ContractError::Claimed {} => ContractError::Claimed {},
+            CW721ContractError::Expired {} => ContractError::Expired {},
+            CW721ContractError::ApprovalNotFound {spender} => ContractError::ApprovalNotFound{spender}
+        }
+    }
 }

@@ -70,6 +70,57 @@ mod tests {
     use std::collections::HashMap;
     
     #[test]
+    fn test_generate_random_by_level() {
+        let param_l_0_1 = generate_random_by_level(0);
+        let param_l_0_2 = generate_random_by_level(0);
+
+        assert_eq!(param_l_0_1.level, 0);
+        assert_eq!(param_l_0_2.level, 0);
+        
+        assert!(param_l_0_1.damage>=20 && param_l_0_1.damage<=50);
+        assert!(param_l_0_2.damage>=20 && param_l_0_2.damage<=50);
+        assert!(param_l_0_1.deffence<=20);
+        assert!(param_l_0_2.deffence<=20);
+        assert!(param_l_0_1.hp>=100 && param_l_0_1.hp<=200);
+        assert!(param_l_0_2.hp>=100 && param_l_0_2.hp<=200);
+        assert!(param_l_0_1.accuracy>=10 && param_l_0_1.accuracy<=30);
+        assert!(param_l_0_2.accuracy>=10 && param_l_0_2.accuracy<=30);
+
+        
+        let param_l_1_1 = generate_random_by_level(1);
+        let param_l_1_2 = generate_random_by_level(1);
+
+        assert!(param_l_1_1.damage>=22 && param_l_1_1.damage<=55);
+        assert!(param_l_1_2.damage>=22 && param_l_1_2.damage<=55);
+        assert!(param_l_0_1.deffence<=22);
+        assert!(param_l_0_2.deffence<=22);
+        assert!(param_l_1_1.hp>=110 && param_l_1_1.hp<=200);
+        assert!(param_l_1_2.hp>=110 && param_l_1_2.hp<=200);
+        assert!(param_l_1_1.accuracy>=11 && param_l_1_1.accuracy<=33);
+        assert!(param_l_1_2.accuracy>=11 && param_l_1_2.accuracy<=33);
+        
+        assert_eq!(param_l_1_1.level, 1);
+        assert_eq!(param_l_1_2.level, 1);
+
+        
+        let param_l_100_1 = generate_random_by_level(100);
+        let param_l_100_2 = generate_random_by_level(100);
+        
+        assert_eq!(param_l_100_1.level, 100);
+        assert_eq!(param_l_100_2.level, 100);
+        
+        assert!(param_l_100_1.damage>=220);
+        assert!(param_l_100_2.damage>=220);
+        assert!(param_l_0_1.deffence<=220);
+        assert!(param_l_0_2.deffence<=220);
+        assert_eq!(param_l_100_1.hp, u8::MAX);
+        assert_eq!(param_l_100_2.hp, u8::MAX);
+        assert!(param_l_100_1.accuracy>=110);
+        assert!(param_l_100_2.accuracy>=110);
+
+    }
+
+    #[test]
     fn test_get_random_u8() {
         let r1 = get_random_u8();
         let r2 = get_random_u8();

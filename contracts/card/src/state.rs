@@ -2,7 +2,12 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::Addr;
-use cw_storage_plus::Map;
+use cw_storage_plus::Item;
+
+use cyber_std::CyberMsgWrapper;
+
+pub type CardContract<'a> = cw721_base::Cw721Contract<'a, Extension, CyberMsgWrapper>;
+pub type Extension = Card;
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct CardParams {
@@ -22,7 +27,6 @@ impl CardParams {
             accuracy:0,
         };
     }
-    
 }
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug, PartialEq, Eq, JsonSchema)]
@@ -44,6 +48,13 @@ impl Card {
     }
 }
 
-pub const CARDS: Map<String, Card> = Map::new("cards");
-pub const OWNER_CARDS: Map<Addr, Vec<String>> = Map::new("owner_cards");
-pub const CARD_OWNER: Map<String, Addr> = Map::new("card_owner");
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct Config {
+    pub owner: Addr,
+}
+
+pub const CONFIG: Item<Config> = Item::new("config");
+
+// pub const CARDS: Map<String, Card> = Map::new("cards");
+// pub const OWNER_CARDS: Map<Addr, Vec<String>> = Map::new("owner_cards");
+// pub const CARD_OWNER: Map<String, Addr> = Map::new("card_owner");
